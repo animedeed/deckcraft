@@ -1,0 +1,250 @@
+<title>Бриф колоды</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Пульт режиссёра: слева — разделы выбора с превью, справа — липкая сводка выбранного и кнопка «Сохранить». */
+:root {
+  --bg: #eef1f0; --surface: #ffffff; --ink: #14201e; --ink2: #3e4c49; --muted: #66756f;
+  --line: #d3dbd9; --accent: #0e6e66; --accent-ink: #ffffff; --pick: #e2f0ed; --warn: #9a5b00;
+  --f-head: "Unbounded", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1514; --surface: #172120; --ink: #e6eeec; --ink2: #b9c6c3; --muted: #8b9b97;
+  --line: #2a3836; --accent: #4fc1b4; --accent-ink: #062320; --pick: #173532; --warn: #f0b45a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1514; --surface: #172120; --ink: #e6eeec; --ink2: #b9c6c3; --muted: #8b9b97;
+  --line: #2a3836; --accent: #4fc1b4; --accent-ink: #062320; --pick: #173532; --warn: #f0b45a; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); padding: 0 16px }
+.wrap { max-width: 1280px; margin: 0 auto; padding-block: 28px 64px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; align-items: start }
+@media (max-width: 960px) { .wrap { grid-template-columns: minmax(0, 1fr) } aside { position: static } }
+header.top { grid-column: 1 / -1; display: grid; gap: 6px }
+.eyebrow { font: 600 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent) }
+h1 { font: 700 clamp(24px, 3.4vw, 38px)/1.12 var(--f-head); margin: 0; text-wrap: balance }
+.lead { color: var(--ink2); max-width: 68ch; margin: 0 }
+main { display: grid; gap: 40px; min-width: 0 }
+section > h2 { font: 500 20px/1.2 var(--f-head); margin: 0 0 4px }
+section > p.hint { margin: 0 0 14px; color: var(--muted); max-width: 70ch }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px }
+.opt { position: relative; display: grid; grid-template-rows: auto 1fr; text-align: left; padding: 0; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--surface); color: inherit; font: inherit; cursor: pointer; overflow: hidden; min-width: 0 }
+.opt:hover { border-color: var(--accent) }
+.opt:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
+.opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); background: var(--pick) }
+.opt .media { aspect-ratio: 16 / 9; width: 100%; background: var(--line); display: block; object-fit: cover; max-width: 100% }
+.opt .noimg { aspect-ratio: 16 / 9; display: grid; place-items: center; color: var(--muted); font: 12px var(--f-mono); background: repeating-linear-gradient(135deg, transparent 0 8px, var(--line) 8px 9px) }
+.opt .body { padding: 10px 12px 12px; display: grid; gap: 4px; align-content: start }
+.opt .name { font-weight: 600 }
+.opt .why { color: var(--ink2); font-size: 13.5px }
+.badge { position: absolute; top: 8px; left: 8px; font: 600 11px/1 var(--f-mono); letter-spacing: .05em; padding: 5px 7px; border-radius: 5px;
+  background: var(--accent); color: var(--accent-ink) }
+.reason { font-size: 13px; color: var(--accent); }
+.rows { display: grid; gap: 10px }
+.row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface) }
+@media (max-width: 640px) { .row { grid-template-columns: minmax(0, 1fr) } }
+.row .sec { font-weight: 600 }
+.row .sec small { display: block; font-weight: 400; color: var(--muted); font-size: 12.5px }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { border: 1px solid var(--line); background: transparent; color: var(--ink2); border-radius: 999px; padding: 5px 11px; font: 500 13px var(--f-body); cursor: pointer }
+.chip:hover { border-color: var(--accent); color: var(--ink) }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) }
+.chip:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
+.chip.rec::after { content: " ★"; }
+textarea { width: 100%; min-height: 110px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; resize: vertical }
+textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px }
+aside { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); display: grid; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); min-width: 0 }
+aside h3 { font: 500 15px/1.2 var(--f-head); margin: 0 }
+dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: 13.5px }
+dt { color: var(--muted) }
+dd { margin: 0; font-weight: 500; overflow-wrap: anywhere }
+.btn { border: 0; border-radius: 9px; padding: 11px 14px; font: 600 14px var(--f-body); cursor: pointer; background: var(--accent); color: var(--accent-ink) }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line) }
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px }
+.btn[disabled] { opacity: .55; cursor: default }
+.status { font-size: 13px; color: var(--ink2); min-height: 1.4em }
+.status.err { color: var(--warn) }
+.mode { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
+pre.json { margin: 0; max-height: 200px; overflow: auto; font: 11.5px/1.45 var(--f-mono); background: var(--bg); border-radius: 8px; padding: 10px; color: var(--ink2) }
+.mono { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted) }
+@media (prefers-reduced-motion: reduce) { .opt .media[data-gif] { content-visibility: auto } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow" id="eb">deckcraft · бриф</span>
+    <h1 id="topic"></h1>
+    <p class="lead" id="lead"></p>
+  </header>
+
+  <main id="main"></main>
+
+  <aside aria-label="Выбранное">
+    <h3>Ваш выбор</h3>
+    <dl id="sum"></dl>
+    <button class="btn" id="save" type="button">Сохранить выбор</button>
+    <button class="btn ghost" id="reset" type="button">Вернуть рекомендацию</button>
+    <div class="status" id="status" role="status"></div>
+    <details>
+      <summary class="mono">Выбор текстом (если сохранить не получилось — скопируйте в чат)</summary>
+      <pre class="json" id="json"></pre>
+      <button class="btn ghost" id="copy" type="button" style="margin-top:8px;width:100%">Скопировать</button>
+    </details>
+  </aside>
+</div>
+
+<script>
+const DATA = /*DATA*/null;
+
+const rec = DATA.brief;
+const recState = () => ({
+  palette: rec.palette.key, motif: rec.motif.key, navigation: rec.navigation.key, transition: rec.transition.key,
+  sections: Object.fromEntries(rec.sections.map(s => [s.section, s.motion])), notes: ""
+});
+let state = recState();
+let draftKey = "deckbrief:" + (DATA.id || rec.topic);
+try { const d = JSON.parse(localStorage.getItem(draftKey) || "null"); if (d) state = { ...state, ...d }; } catch (e) {}
+
+const $ = (s, el = document) => el.querySelector(s);
+const h = (tag, attrs = {}, kids = []) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "text") el.textContent = v; else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (v !== null && v !== undefined && v !== false) el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of [].concat(kids)) if (c) el.append(c);
+  return el;
+};
+
+$("#topic").textContent = rec.topic;
+$("#lead").textContent = "Я уже выбрал всё сам — рекомендации отмечены. Поменяйте то, что не нравится, и нажмите «Сохранить выбор». "
+  + "Превью — короткие фрагменты из лаборатории форм; в вашей колоде они будут в выбранной палитре и с вашим текстом.";
+if (rec.minutes) $("#eb").textContent = `deckcraft · бриф · ${rec.minutes} мин` + (rec.audience ? ` · ${rec.audience}` : "");
+
+// из причины оставляем только совпадения с темой: описание уже есть на карточке
+const hitsOf = r => r && r.includes("В теме:") ? r.slice(r.indexOf("В теме:")) : "";
+
+function card(item, field, recKey, recReason) {
+  const isRec = item.key === recKey;
+  const media = item.img
+    ? h("img", { class: "media", src: item.img, alt: "Превью: " + item.title, loading: "lazy", "data-gif": item.img.endsWith(".gif") || null })
+    : h("div", { class: "noimg", text: "без превью" });
+  const btn = h("button", { class: "opt", type: "button", "aria-pressed": String(state[field] === item.key), "data-key": item.key,
+    onclick: () => { state[field] = item.key; persist(); render(); } }, [
+    media,
+    h("div", { class: "body" }, [
+      h("span", { class: "name", text: item.title }),
+      h("span", { class: "why", text: item.why }),
+      isRec && hitsOf(recReason) ? h("span", { class: "reason", text: hitsOf(recReason) }) : null
+    ])
+  ]);
+  if (isRec) btn.append(h("span", { class: "badge", text: "РЕКОМЕНДУЮ" }));
+  return btn;
+}
+
+function group(id, title, hint, items, field, recKey, recReason) {
+  return h("section", { id }, [h("h2", { text: title }), h("p", { class: "hint", text: hint }),
+    h("div", { class: "grid" }, items.map(it => card(it, field, recKey, recReason)))]);
+}
+
+function render() {
+  const main = $("#main"); const y = window.scrollY; main.replaceChildren();
+  main.append(group("pal", "Палитра", "Цвет держит всю колоду: фон, текст, один главный акцент. Карточка показывает, как увидит зритель.",
+    DATA.palettes, "palette", rec.palette.key, rec.palette.reason));
+  main.append(group("motif", "Сквозной мотив", "Один образ от темы живёт всю колоду в разных ролях: обложка, указатель, фон, диаграмма, финал.",
+    DATA.motifs, "motif", rec.motif.key, rec.motif.reason));
+  main.append(group("nav", "Навигация", "Одна система на колоду: по ней зритель понимает, где он сейчас.",
+    DATA.navigation, "navigation", rec.navigation.key, ""));
+  main.append(group("trans", "Переход между разделами", "Один тип на колоду — как знак препинания между частями доклада.",
+    DATA.transitions, "transition", rec.transition.key, ""));
+
+  const recMap = Object.fromEntries(rec.sections.map(s => [s.section, s]));
+  main.append(h("section", { id: "langs" }, [
+    h("h2", { text: "Язык движения по разделам" }),
+    h("p", { class: "hint", text: "Внутри раздела язык повторяется, у соседних разделов он разный. ★ — моя рекомендация." }),
+    h("div", { class: "rows" }, rec.sections.map(s => h("div", { class: "row" }, [
+      h("div", { class: "sec" }, [document.createTextNode(s.section), h("small", { text: recMap[s.section].reason })]),
+      h("div", { class: "chips" }, DATA.motion.map(m => h("button", {
+        class: "chip" + (m.key === s.motion ? " rec" : ""), type: "button", title: m.why,
+        "aria-pressed": String(state.sections[s.section] === m.key),
+        onclick: () => { state.sections[s.section] = m.key; persist(); render(); } }, [document.createTextNode(m.title)])))
+    ])))
+  ]));
+  main.append(group("motion", "Как выглядят языки движения", "Справка к строкам выше. Нажатие выбирает язык для всех разделов сразу.",
+    DATA.motion, "_all", "", ""));
+  main.querySelectorAll("#motion .opt").forEach(b => {
+    b.setAttribute("aria-pressed", "false");
+    b.onclick = () => { for (const s of rec.sections) state.sections[s.section] = b.dataset.key; persist(); render(); };
+  });
+
+  const ta = h("textarea", { id: "notes", placeholder: "Например: меньше текста на слайдах, больше 3D, мотив — не бокал, а бочка…",
+    oninput: e => { state.notes = e.target.value; persist(false); summary(); } });
+  ta.value = state.notes || "";
+  main.append(h("section", { id: "wish" }, [h("h2", { text: "Пожелания" }),
+    h("p", { class: "hint", text: "Что важно, чего избегать, что понравилось в прошлых колодах." }), ta]));
+  window.scrollTo(0, y);
+  summary();
+}
+
+const titleOf = (list, key) => (list.find(x => x.key === key) || {}).title || key;
+function payload() {
+  return { topic: rec.topic, palette: state.palette, motif: state.motif, navigation: state.navigation, transition: state.transition,
+    sections: rec.sections.map(s => ({ section: s.section, motion: state.sections[s.section] })), notes: state.notes || "",
+    changed: changedFields() };
+}
+function changedFields() {
+  const r = recState(), out = [];
+  for (const k of ["palette", "motif", "navigation", "transition"]) if (state[k] !== r[k]) out.push(k);
+  for (const s of rec.sections) if (state.sections[s.section] !== r.sections[s.section]) out.push("section:" + s.section);
+  return out;
+}
+function summary() {
+  const sum = $("#sum"); sum.replaceChildren();
+  const add = (k, v) => sum.append(h("dt", { text: k }), h("dd", { text: v }));
+  add("Палитра", titleOf(DATA.palettes, state.palette));
+  add("Мотив", titleOf(DATA.motifs, state.motif));
+  add("Навигация", titleOf(DATA.navigation, state.navigation));
+  add("Переход", titleOf(DATA.transitions, state.transition));
+  rec.sections.forEach((s, i) => add(String(i + 1).padStart(2, "0"), titleOf(DATA.motion, state.sections[s.section])));
+  const n = changedFields().length;
+  add("Изменено", n ? `${n} из ${4 + rec.sections.length}` : "ничего — всё по рекомендации");
+  $("#json").textContent = JSON.stringify(payload(), null, 1);
+}
+function persist(redraw = true) { try { localStorage.setItem(draftKey, JSON.stringify(state)); } catch (e) {} }
+
+const status = (t, err) => { const s = $("#status"); s.textContent = t; s.classList.toggle("err", !!err); };
+let db = null;
+$("#save").onclick = async () => {
+  if (!db) { status("Сохранение здесь недоступно. Раскройте «Выбор текстом» ниже и вставьте его в чат.", true); return; }
+  $("#save").disabled = true; status("Сохраняю…");
+  try {
+    await db.doc("brief/choice").set({ ...payload(), savedAt: new Date().toISOString() });
+    status("Сохранено. Напишите в чат «готово» — я прочитаю выбор и соберу раскадровку.");
+  } catch (e) {
+    status("Не сохранилось" + (e && e.code ? ` (${e.code})` : "") + ". Скопируйте выбор текстом ниже и вставьте в чат.", true);
+  } finally { $("#save").disabled = false; }
+};
+$("#reset").onclick = () => { state = recState(); persist(); render(); status("Вернул рекомендацию."); };
+$("#copy").onclick = async () => {
+  const t = $("#json").textContent;
+  try { await navigator.clipboard.writeText(t); status("Скопировано."); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("#json")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); status("Выделил текст — скопируйте вручную."); }
+};
+
+render();
+(async () => {
+  try {
+    db = window.claude && window.claude.use ? await window.claude.use("db") : null;
+    if (!db) { status("Сохранение недоступно в этом окне — выбор можно скопировать текстом."); return; }
+    const snap = await db.doc("brief/choice").get();
+    const saved = snap && snap.exists ? snap.data() : null;
+    if (saved && saved.palette) {
+      state.palette = saved.palette; state.motif = saved.motif; state.navigation = saved.navigation; state.transition = saved.transition;
+      for (const s of saved.sections || []) if (s.section in state.sections) state.sections[s.section] = s.motion;
+      state.notes = saved.notes || ""; render(); status("Загружен сохранённый выбор.");
+    }
+  } catch (e) { /* чтение без доступа — работаем локально */ }
+})();
+</script>

@@ -1,0 +1,47 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: System packages (LibreOffice, metric-compatible fonts)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends libreoffice-impress fonts-crosextra-carlito fonts-liberation fonts-dejavu-core
+      - name: Python packages
+        run: pip install -r requirements.txt
+      - name: Manifests are valid JSON with required fields
+        run: |
+          python - <<'PY'
+          import json
+          m = json.load(open(".claude-plugin/marketplace.json"))
+          p = json.load(open("plugins/deckcraft/.claude-plugin/plugin.json"))
+          assert m["name"] and m["plugins"][0]["source"] == "./plugins/deckcraft", m
+          assert p["name"] == "deckcraft" and p["version"], p
+          print("manifests ok, version", p["version"])
+          PY
+      - name: Skills have frontmatter
+        run: |
+          for f in plugins/deckcraft/skills/*/SKILL.md; do
+            head -1 "$f" | grep -q '^---$' || { echo "no frontmatter: $f"; exit 1; }
+            grep -q '^name:' "$f" && grep -q '^description:' "$f" || { echo "missing name/description: $f"; exit 1; }
+          done
+      - name: Palettes pass contrast
+        working-directory: plugins/deckcraft/skills/pptx-morph/scripts
+        run: python -c "from morphkit.palette import check_catalog; r = check_catalog(); assert not r, r; print('contrast ok')"
+      - name: Demo deck builds from scratch (lint, motion lint, effects)
+        working-directory: plugins/deckcraft/skills/pptx-morph/scripts
+        run: python examples/demo_deck.py "$RUNNER_TEMP/demo" --no-render
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: demo-deck
+          path: ${{ runner.temp }}/demo/

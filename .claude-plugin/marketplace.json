@@ -1,0 +1,14 @@
+{
+  "name": "deckcraft",
+  "owner": { "name": "animedeed", "url": "https://github.com/animedeed" },
+  "metadata": {
+    "description": "PowerPoint decks with Morph transitions for Claude Code / Презентации .pptx с «Трансформацией» для Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "deckcraft",
+      "source": "./plugins/deckcraft",
+      "description": "Brief with a visual survey, build with motion checks, remix existing decks, design review. /deck-brief, /deck-build, /deck-remix, /deck-review."
+    }
+  ]
+}

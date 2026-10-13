@@ -1,0 +1,21 @@
+name: Ошибка · Bug
+description: Что-то собирается или выглядит не так · Something builds or looks wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Что делали · What you did
+      description: Команда, тема или файл · Command, topic or file
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидали и получили · Expected vs got
+      description: Скриншот, GIF или текст ошибки · Screenshot, GIF or error text
+    validations: { required: true }
+  - type: input
+    id: env
+    attributes:
+      label: Окружение · Environment
+      description: ОС, версия PowerPoint, `claude --version` · OS, PowerPoint version, `claude --version`

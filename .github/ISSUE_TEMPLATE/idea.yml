@@ -1,0 +1,15 @@
+name: Идея · Idea
+description: Новый мотив, палитра, приём или команда · A new motif, palette, technique or command
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: Идея · Idea
+      description: Что и для какой темы презентации · What, and for which kind of deck
+    validations: { required: true }
+  - type: textarea
+    id: refs
+    attributes:
+      label: Примеры · References
+      description: Ссылки, видео, слайды · Links, videos, slides

@@ -1,0 +1,5 @@
+python-pptx>=1.0
+lxml>=5.0
+Pillow>=10.0
+numpy>=1.26
+shapely>=2.0
