@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-10-13
+- RU/EN switch translates the user's topic, sections and audience too (the brief stores them in both languages:
+  `brief_page.py --alt-topic --alt-sections --alt-audience`, `compare_page.py --alt-topic`); topic words in the
+  reasons come from the translated text. The choice is kept by the original section names.
+- README: the English survey screenshot shows an English page.
+
 ## 0.2.0 — 2026-10-13
 - Survey: pick several palettes, motifs, navigation systems, accent transitions and motion languages per section
   (the number on a card is its priority); the plan of presentation variants A/B/C is shown live. Every item has a GIF

@@ -43,7 +43,7 @@ argument-hint: "[brief.json]"
 - Каждый вариант — своя папка: .pptx, `report.json` (variant, проверки, `gifs` одних и тех же моментов, `pattern`),
   `sheet.png`. Проверка §2 — у каждого.
 - Сравнение — **только после сборки** вариантов по сохранённому выбору опроса (без опроса не публикуй):
-  `python3 scripts/compare_page.py OUT VAR_A VAR_B VAR_C --topic "…" --brief-url <ссылка на опрос> --lang <lang>`
+  `python3 scripts/compare_page.py OUT VAR_A VAR_B VAR_C --topic "…" --brief-url <ссылка на опрос> --lang <lang> --alt-topic "<тема на втором языке>"`
   (на странице переключатель RU/EN; GIF — из собранной презентации) → публикуй как артефакт
   (`files` из publish.json, `capabilities: {"db": {}}`, `icon: "compare"`). Решение — ArtifactData `get`
   `compare`/`choice`: `best` (A/B/C или "mix"), `from` (ось → вариант), `result` (итоговые палитра, навигация,

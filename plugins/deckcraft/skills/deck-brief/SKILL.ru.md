@@ -56,7 +56,9 @@ python3 -c "from morphkit.catalog import auto_brief; import json; print(json.dum
 2. Страница: `python3 scripts/brief_page.py <scratchpad>/brief_assets --brief out/decks/<slug>/brief.json --lang <lang>
    --assets-other <scratchpad>/brief_assets_<other>` → `index.html` и `publish.json` (карта файлов). Страница открывается
    на `<lang>`, в углу — переключатель RU/EN: меняются подписи, причины и GIF, выбор сохраняется. Без `--assets-other`
-   второй язык показывает те же GIF с переведёнными подписями.
+   второй язык показывает те же GIF с переведёнными подписями. Всегда добавляй тему, разделы и аудиторию
+   пользователя в переводе на второй язык: `--alt-topic "…" --alt-sections "…|…" --alt-audience "…"` (тот же порядок
+   разделов; переводи сам) — иначе после переключения они останутся на языке пользователя.
 3. Публикация: инструмент Artifact, `file_path` = index.html, `files` = карта из publish.json,
    `capabilities: {"db": {}}`, `icon: "palette"`. Страница сохраняет выбор в документ `brief/choice`.
 4. Скажи пользователю: открыть ссылку, поменять что хочется, нажать «Сохранить выбор» и написать «готово».

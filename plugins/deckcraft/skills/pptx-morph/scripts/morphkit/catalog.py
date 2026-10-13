@@ -210,7 +210,9 @@ def auto_brief(topic: str, sections: list[str], audience: str = "", minutes: int
 
 def localize_brief(brief: dict, lang: str) -> dict:
     """Тот же бриф (те же ключи и совпавшие слова темы) с подписями и причинами на языке lang —
-    для переключателя языка на странице опроса. Тема, разделы и аудитория остаются как написал пользователь."""
+    для переключателя языка на странице опроса. Тему, разделы и аудиторию на втором языке даёт brief["alt"][lang]
+    ({"topic", "audience", "sections": [...]}, их пишет Claude при создании брифа); без него они остаются как
+    написал пользователь. У каждого раздела key — исходное название: выбор на странице хранится по нему."""
     from .i18n import tr, ui
     from .palette import CATALOG
 
@@ -234,17 +236,42 @@ def localize_brief(brief: dict, lang: str) -> dict:
                 "reason": w[0].upper() + w[1:] + (f". {ui('topic_words', lang)}: {', '.join(hits)}." if hits else ".")}
 
     b = brief
+    alt = (b.get("alt") or {}).get(lang) or {}
+    names = alt.get("sections") or []
+
+    def words(tags, text, fallback):
+        """Topic words on the page's language: matched in the translated text if there is one."""
+        if not text:
+            return list(fallback or [])
+        low, hits = text.lower(), []
+        for t in tags:
+            m = re.search(r"\b" + t, low)
+            if m:
+                hits.append(re.match(r"\w+", low[m.start():]).group(0))
+        return list(dict.fromkeys(hits))
+
+    tags_of = lambda choices, key: next((c.tags for c in choices if c.key == key), [])  # noqa: E731
+    ph = words(pals[b["palette"]["key"]].tags if b["palette"]["key"] in pals else [], alt.get("topic"),
+               b["palette"].get("hits"))
+    mh = words(tags_of(MOTIFS, b["motif"]["key"]), alt.get("topic"), b["motif"].get("hits"))
     out = dict(b, lang=lang)
-    out["palette"] = {**pal(b["palette"]["key"], b["palette"].get("hits") or []), "hits": b["palette"].get("hits") or [],
+    out["palette"] = {**pal(b["palette"]["key"], ph), "hits": ph,
                       "alternatives": [pal(a["key"]) for a in b["palette"].get("alternatives", [])]}
     m = b["motif"]
-    out["motif"] = {"key": m["key"], "title": title(MOTIFS, m["key"]), "hits": m.get("hits") or [],
-                    "reason": why(MOTIFS, m["key"], m.get("hits") or []),
+    out["motif"] = {"key": m["key"], "title": title(MOTIFS, m["key"]), "hits": mh,
+                    "reason": why(MOTIFS, m["key"], mh),
                     "alternatives": [{"key": a["key"], "title": title(MOTIFS, a["key"])} for a in m.get("alternatives", [])]}
     out["navigation"] = {"key": b["navigation"]["key"], "title": title(NAVIGATION, b["navigation"]["key"])}
     out["transition"] = {"key": b["transition"]["key"], "title": title(TRANSITIONS, b["transition"]["key"])}
-    out["sections"] = [dict(s, title=title(MOTION, s["motion"]), reason=why(MOTION, s["motion"], s.get("hits") or []))
-                       for s in b.get("sections", [])]
+    secs = []
+    for k, s_ in enumerate(b.get("sections", [])):
+        nm = names[k] if k < len(names) and names[k] else ""
+        hh = words(tags_of(MOTION, s_["motion"]), nm, s_.get("hits"))
+        secs.append(dict(s_, key=s_.get("key") or s_["section"], section=nm or s_["section"], hits=hh,
+                         title=title(MOTION, s_["motion"]), reason=why(MOTION, s_["motion"], hh)))
+    out["sections"] = secs
+    out["topic"] = alt.get("topic") or b["topic"]
+    out["audience"] = alt.get("audience") or b.get("audience", "")
     return out
 
 

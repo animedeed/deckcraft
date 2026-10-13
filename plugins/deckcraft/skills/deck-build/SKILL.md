@@ -43,7 +43,7 @@ Write `out/decks/<slug>/build_deck.py` (do not edit XML by hand): `sys.path` →
 - Each variant gets its own folder: .pptx, `report.json` (variant, checks, `gifs` of the same moments, `pattern`),
   `sheet.png`. The §2 checks — for each one.
 - The comparison — **only after building** the variants from the saved survey choice (do not publish without a survey):
-  `python3 scripts/compare_page.py OUT VAR_A VAR_B VAR_C --topic "…" --brief-url <link to the survey> --lang <lang>`
+  `python3 scripts/compare_page.py OUT VAR_A VAR_B VAR_C --topic "…" --brief-url <link to the survey> --lang <lang> --alt-topic "<topic in the other language>"`
   (the page has an RU/EN switch; the GIFs are those of the built presentation) → publish as an artifact
   (`files` from publish.json, `capabilities: {"db": {}}`, `icon: "compare"`). The decision — ArtifactData `get`
   `compare`/`choice`: `best` (A/B/C or "mix"), `from` (axis → variant), `result` (final palette, navigation,

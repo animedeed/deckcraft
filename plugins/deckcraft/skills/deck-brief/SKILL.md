@@ -56,7 +56,9 @@ a complex picture where there is little text. Ask one thing: “shall I build it
 2. Page: `python3 scripts/brief_page.py <scratchpad>/brief_assets --brief out/decks/<slug>/brief.json --lang <lang>
    --assets-other <scratchpad>/brief_assets_<other>` → `index.html` and `publish.json` (file map). The page opens in
    `<lang>` and has an RU/EN switch in the corner: captions, reasons and GIFs change, the choice stays. Without
-   `--assets-other` the second language shows the same GIFs with translated captions.
+   `--assets-other` the second language shows the same GIFs with translated captions. Always add the user's topic,
+   sections and audience translated into the other language: `--alt-topic "…" --alt-sections "…|…" --alt-audience "…"`
+   (same order of sections; translate them yourself) — otherwise they stay in the user's language after the switch.
 3. Publishing: the Artifact tool, `file_path` = index.html, `files` = the map from publish.json,
    `capabilities: {"db": {}}`, `icon: "palette"`. The page saves the choice to the document `brief/choice`.
 4. Tell the user: open the link, change whatever they want, press “Save choice” and write “done”.

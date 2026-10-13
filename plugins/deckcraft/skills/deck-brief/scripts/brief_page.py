@@ -35,11 +35,11 @@ def _items(choices, gifs: dict, lang: str) -> list[dict]:
     return out
 
 
-def _page_data(index: dict, brief: dict, lang: str, prefix: str = "") -> dict:
+def _page_data(index: dict, brief: dict, lang: str, prefix: str = "", page_id: str = "") -> dict:
     """Данные страницы на одном языке. prefix — подпапка с картинками этого языка (en/), если они есть."""
     gifs = {k: prefix + v for k, v in index["gifs"].items()}
     cap = lambda t: t[0].upper() + t[1:]  # noqa: E731
-    return {"id": brief.get("id") or brief["topic"], "brief": brief, "lang": lang,
+    return {"id": page_id or brief.get("id") or brief["topic"], "brief": brief, "lang": lang,
             "palettes": [{"key": p["key"], "title": tr(p["title"], lang), "why": cap(tr(p["why"], lang)),
                           "img": prefix + p["png"]} for p in index["palettes"]],
             "motifs": _items(MOTIFS, gifs, lang), "navigation": _items(NAVIGATION, gifs, lang),
@@ -65,8 +65,9 @@ def build(assets: Path, brief: dict, lang: str = "ru", assets_other: Path | None
             dst = assets / prefix / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(assets_other / rel, dst)
-    pack = {"lang": lang, lang: _page_data(index, brief, lang),
-            other: _page_data(index_o, localize_brief(brief, other), other, prefix)}
+    pid = brief.get("id") or brief["topic"]  # one id for both languages: the draft and the choice are shared
+    pack = {"lang": lang, lang: _page_data(index, brief, lang, page_id=pid),
+            other: _page_data(index_o, localize_brief(brief, other), other, prefix, page_id=pid)}
     tpl = (HERE / "brief_page.html").read_text()
     ui_en = json.loads((HERE.parents[1] / "pptx-morph" / "scripts" / "morphkit" / "data" / "ui_en.json").read_text())
     html = tpl.replace("/*DATA*/null", json.dumps(pack, ensure_ascii=False).replace("</", "<\\/")).replace(
@@ -93,6 +94,9 @@ def main() -> None:
     ap.add_argument("--minutes", type=int, default=10)
     ap.add_argument("--lang", default="ru", help="ru | en — язык, который страница показывает первым")
     ap.add_argument("--assets-other", type=Path, help="превью на втором языке (lab.previews --lang ...)")
+    ap.add_argument("--alt-topic", help="тема на втором языке (для переключателя RU/EN)")
+    ap.add_argument("--alt-sections", help="разделы на втором языке через |, в том же порядке")
+    ap.add_argument("--alt-audience", help="аудитория на втором языке")
     a = ap.parse_args()
     if a.brief:
         brief = json.loads(a.brief.read_text())
@@ -100,6 +104,13 @@ def main() -> None:
         brief = auto_brief(a.topic, [s.strip() for s in a.sections.split("|") if s.strip()], a.audience, a.minutes,
                            lang=a.lang)
         (a.assets / "brief.json").write_text(json.dumps(brief, ensure_ascii=False, indent=1))
+    if a.alt_topic or a.alt_sections or a.alt_audience:
+        other = "ru" if str(a.lang).startswith("en") else "en"
+        brief.setdefault("alt", {})[other] = {k: v for k, v in {
+            "topic": a.alt_topic, "audience": a.alt_audience,
+            "sections": [x.strip() for x in a.alt_sections.split("|")] if a.alt_sections else None}.items() if v}
+        if not a.brief:
+            (a.assets / "brief.json").write_text(json.dumps(brief, ensure_ascii=False, indent=1))
     m = build(a.assets, brief, a.lang, a.assets_other)
     print(json.dumps({k: v for k, v in m.items() if k != "files"} | {"n_files": len(m["files"])}, ensure_ascii=False))
 

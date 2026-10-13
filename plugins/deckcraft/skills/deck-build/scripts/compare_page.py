@@ -2,6 +2,7 @@
 выбор «лучший целиком» или «собрать из частей»; решение сохраняется в db артефакта (doc compare/choice).
 
     python compare_page.py OUT_DIR VAR_DIR [VAR_DIR ...] --topic "..." --brief-url https://claude.ai/artifact/...
+        [--lang ru|en] [--alt-topic "тема на втором языке"]
 
 Сравнение строится только из вариантов, собранных по сохранённому выбору опроса (/deck-brief): тема и ссылка на
 опрос показываются в шапке страницы.
@@ -44,8 +45,10 @@ def _titles(v: dict, lang: str) -> dict:
             "transition_title": accents or tr("только Morph", lang)}
 
 
-def build(out: Path, var_dirs: list[Path], topic: str = "", brief_url: str = "", lang: str = "ru") -> dict:
-    """lang — язык, который страница показывает первым; второй доступен переключателем RU/EN."""
+def build(out: Path, var_dirs: list[Path], topic: str = "", brief_url: str = "", lang: str = "ru",
+          alt_topic: str = "") -> dict:
+    """lang — язык, который страница показывает первым; второй доступен переключателем RU/EN.
+    alt_topic — тема на втором языке (без неё в обоих языках тема как написал пользователь)."""
     lang = "en" if str(lang).lower().startswith("en") else "ru"
     set_lang(lang)
     out.mkdir(parents=True, exist_ok=True)
@@ -72,7 +75,7 @@ def build(out: Path, var_dirs: list[Path], topic: str = "", brief_url: str = "",
                        "qa": {"lint": r["lint_errors"], "motion": r["motion_lint"], "xsd": r["xsd"]}})
     pack = {"lang": lang}
     for lg in ("ru", "en"):
-        pack[lg] = {"topic": topic, "brief_url": brief_url, "lang": lg,
+        pack[lg] = {"topic": topic if lg == lang or not alt_topic else alt_topic, "brief_url": brief_url, "lang": lg,
                     "variants": [{**c, **_titles(c["variant"], lg)} for c in common],
                     "moments": [(k, tr(t, lg)) for k, t in MOMENTS]}
     ui_en = json.loads((HERE.parents[1] / "pptx-morph" / "scripts" / "morphkit" / "data" / "ui_en.json").read_text())
@@ -89,13 +92,13 @@ def build(out: Path, var_dirs: list[Path], topic: str = "", brief_url: str = "",
 def main() -> None:
     args = [a for a in sys.argv[1:]]
     opts = {}
-    for flag in ("--topic", "--brief-url", "--lang"):
+    for flag in ("--topic", "--brief-url", "--lang", "--alt-topic"):
         if flag in args:
             i = args.index(flag)
             opts[flag] = args[i + 1]
             del args[i:i + 2]
     m = build(Path(args[0]), [Path(a) for a in args[1:]], opts.get("--topic", ""), opts.get("--brief-url", ""),
-              opts.get("--lang", "ru"))
+              opts.get("--lang", "ru"), opts.get("--alt-topic", ""))
     print(json.dumps({"page": m["page"], "n_files": len(m["files"]), "size_mb": m["size_mb"]}, ensure_ascii=False))
 
 

@@ -165,15 +165,17 @@ function langSwitch(onChange) {
 
 
 let rec = DATA.brief;
+const K = s => s.key || s.section;  // section key = its name as the user wrote it; s.section is shown
 const AX = [["palette", "palettes"], ["motif", "motifs"], ["navigation", "navigation"]];
 // Состояние v2: в осях — списки (порядок = приоритет), у разделов — пул языков (первый — ведущий)
 const recState = () => ({
   palettes: [rec.palette.key], motifs: [rec.motif.key], navigation: [rec.navigation.key],
   transition: { main: rec.transition.key, accents: [] },
-  sections: Object.fromEntries(rec.sections.map(s => [s.section, [s.motion]])), variants: 1, notes: ""
+  sections: Object.fromEntries(rec.sections.map(s => [K(s), [s.motion]])), variants: 1, notes: ""
 });
 let state = recState();
 const draftKey = "deckbrief2:" + (DATA.id || rec.topic);
+const topic0 = (PACK[PACK.lang] || DATA).brief.topic;  // the topic as the user wrote it — the saved choice uses it
 try { const d = JSON.parse(localStorage.getItem(draftKey) || "null"); if (d && d.palettes) state = { ...state, ...d }; } catch (e) {}
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -269,20 +271,20 @@ function render() {
   ]));
   main.append(det);
 
-  const recMap = Object.fromEntries(rec.sections.map(s => [s.section, s]));
+  const recMap = Object.fromEntries(rec.sections.map(s => [K(s), s]));
   main.append(h("section", { id: "langs" }, [
     h("h2", { text: T("Язык движения по разделам") }),
     h("p", { class: "hint", text: T("Отметьте 1–3 языка на раздел. Первый — ведущий, остальные — вставками внутри раздела; ")
       + T("в вариантах презентации ведущим по очереди становится следующий. ★ — моя рекомендация.") }),
     h("div", { class: "rows" }, rec.sections.map(s => {
-      const pool = state.sections[s.section] || (state.sections[s.section] = [s.motion]);
+      const pool = state.sections[K(s)] || (state.sections[K(s)] = [s.motion]);
       const byKey = Object.fromEntries(DATA.motion.map(m => [m.key, m]));
       const lead = byKey[pool[0]] || DATA.motion[0];
       const img = h("img", { class: "zoomable", src: lead.img || "", alt: T("Превью: ") + lead.title, loading: "lazy" });
       const cap = h("span", { class: "cap", text: lead.title });
       const show = m => { if (m && m.img) { img.src = m.img; img.alt = T("Превью: ") + m.title; cap.textContent = m.title; } };
       return h("div", { class: "row" }, [
-        h("div", { class: "sec" }, [document.createTextNode(s.section), h("small", { text: recMap[s.section].reason })]),
+        h("div", { class: "sec" }, [document.createTextNode(s.section), h("small", { text: recMap[K(s)].reason })]),
         h("div", { class: "pv", title: T("Как выглядит ведущий язык; наведите на вариант справа, чтобы посмотреть его") }, [img, cap]),
         h("div", { class: "chips" }, DATA.motion.map(m => {
           const pos = pool.indexOf(m.key);
@@ -339,7 +341,7 @@ function summary() {
   add(T("Навигация"), titles(DATA.navigation, state.navigation));
   add(T("Переход"), titleOf(DATA.transitions, state.transition.main)
     + (state.transition.accents.length ? " + " + titles(DATA.accents, state.transition.accents) : ""));
-  rec.sections.forEach((s, i) => add(String(i + 1).padStart(2, "0"), titles(DATA.motion, state.sections[s.section] || [])));
+  rec.sections.forEach((s, i) => add(String(i + 1).padStart(2, "0"), titles(DATA.motion, state.sections[K(s)] || [])));
 
   const nv = $("#nvar"); nv.replaceChildren();
   [1, 2, 3].forEach(n => nv.append(h("button", { type: "button", "aria-pressed": String(state.variants === n), text: String(n),
@@ -358,8 +360,8 @@ function summary() {
 }
 
 function payload() {
-  return { schema: 2, topic: rec.topic, palettes: state.palettes, motifs: state.motifs, navigation: state.navigation,
-    transition: state.transition, sections: Object.fromEntries(rec.sections.map(s => [s.section, state.sections[s.section]])),
+  return { schema: 2, topic: topic0, palettes: state.palettes, motifs: state.motifs, navigation: state.navigation,
+    transition: state.transition, sections: Object.fromEntries(rec.sections.map(s => [K(s), state.sections[K(s)]])),
     variants: state.variants, notes: state.notes || "" };
 }
 function persist() { try { localStorage.setItem(draftKey, JSON.stringify(state)); } catch (e) {} }
@@ -404,7 +406,7 @@ render();
     } else if (saved && saved.palette) {  // выбор из версии 0.1: по одному пункту — переносим в списки
       state.palettes = [saved.palette]; state.motifs = [saved.motif]; state.navigation = [saved.navigation];
       state.transition = { main: saved.transition, accents: [] };
-      for (const s of saved.sections || []) if (s.section in state.sections) state.sections[s.section] = [s.motion];
+      for (const s of saved.sections || []) if (K(s) in state.sections) state.sections[K(s)] = [s.motion];
       state.notes = saved.notes || ""; render(); status(T("Загружен ваш прошлый выбор — теперь можно отметить по несколько вариантов."));
     }
   } catch (e) { /* чтение без доступа — работаем локально */ }
