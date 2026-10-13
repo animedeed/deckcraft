@@ -330,7 +330,7 @@ SECTIONS = ["Данные", "Разбиение", "Модель", "Резуль�
 
 
 def seq_bunch(theme) -> Variant:
-    """Живая гроздь через всю колоду: обложка -> поле данных -> три группы -> давим в бокалы -> бокал train
+    """Живая гроздь через всю презентацию: обложка -> поле данных -> три группы -> давим в бокалы -> бокал train
     наливает модель -> гроздь у края как навигация с прогрессом -> бокал-фон под графиком -> финал."""
     red, white = wine_cols(theme)
     B = Bunch("gr", r=0.21)
@@ -503,7 +503,7 @@ def seq_bunch(theme) -> Variant:
     o9 += G[1].objs(theme, (17.6, 6.55), level=shares[1], z=10)
     o9 += G[2].objs(theme, (18.6, 6.55), level=shares[2], z=10)
     S_.append(S(o9, 900))
-    return _v("seq_bunch", "Гроздь живёт через колоду",
+    return _v("seq_bunch", "Гроздь живёт через презентацию",
               "Одна гроздь проходит 9 состояний: обложка → ягоды-образцы (красные/белые) → три горки train/val/test → "
               "ягоды «давятся» в бокалы, уровень = доля выборки → бокал train наклоняется и наливает модель → гроздь у "
               "края — навигация, в ряду раздела созревают ягоды (прогресс) → бокал — бледный фон под MAE → финал.",
@@ -829,12 +829,21 @@ def barrel(theme) -> Variant:
     wood = mix(theme.c("accent3"), "6B4A2B", 0.55)
     def hw(y):
         return a + b * math.cos(math.pi / 2 * (y - cy) / Hh)
-    def stave(j, n=34):
-        t0, t1 = -90 + 180 * j / nst, -90 + 180 * (j + 1) / nst
+    def ecc(y):  # видимая «кривизна» обода на высоте y: сверху 0,2 (как у крышки), к дну больше — смотрим сверху
+        return 0.2 + 0.06 * (y - (cy - Hh)) / (2 * Hh)
+
+    def rim(y, t):  # точка цилиндра: угол t (0 — к зрителю), высота y; передняя часть обода ниже задней
+        return cx + hw(y) * math.sin(math.radians(t)), y + ecc(y) * math.cos(math.radians(t))
+
+    def stave(j, n=72):
+        t0, t1 = -90 + 180 * j / nst + 0.6, -90 + 180 * (j + 1) / nst - 0.6
         ys = [cy - Hh + 2 * Hh * i / n for i in range(n + 1)]
-        L = [(cx + hw(y) * math.sin(math.radians(t0 + 0.6)), y) for y in ys]
-        R_ = [(cx + hw(y) * math.sin(math.radians(t1 - 0.6)), y) for y in ys[::-1]]
-        return V.polygon(L + R_), (t0 + t1) / 2
+        arc = [t1 + (t0 - t1) * i / 12 for i in range(13)]
+        L = [rim(y, t0) for y in ys]                                    # левая кромка сверху вниз
+        bot = [rim(cy + Hh, t0 + (t1 - t0) * i / 12) for i in range(1, 12)]  # низ — дуга эллипса, а не прямая
+        R_ = [rim(y, t1) for y in ys[::-1]]                             # правая кромка снизу вверх
+        top = [rim(cy - Hh, t) for t in arc[1:-1]]                      # верх — по краю крышки
+        return V.polygon(L + bot + R_ + top), (t0 + t1) / 2
     order = list(range(nst))
     sl = []
     for st in range(3):
@@ -859,7 +868,8 @@ def barrel(theme) -> Variant:
         if st == 0:
             for k, yy in enumerate([cy - Hh * 0.82, cy - Hh * 0.45, cy + Hh * 0.45, cy + Hh * 0.82]):
                 w_ = hw(yy) + 0.04
-                pts_top = [(cx + w_ * math.sin(math.radians(t)), yy + 0.12 * math.cos(math.radians(t)) - 0.06) for t in range(-90, 91, 6)]
+                pts_top = [(cx + w_ * math.sin(math.radians(t)), yy + ecc(yy) * math.cos(math.radians(t)) - 0.06)
+                           for t in range(-90, 91, 3)]
                 pts_bot = [(x, y + 0.13) for x, y in pts_top[::-1]]
                 objs.append(vs(f"hoop{k}", V.polygon(pts_top + pts_bot), fill=theme.c("ink2"), z=40,
                                grad=V.gradient([(0, dark(theme.c("ink2"), 0.3)), (0.4, light(theme.c("ink2"), 0.35)),
@@ -1041,7 +1051,7 @@ def vine(theme) -> Variant:
         sl.append(S(objs, 800, fx=fx))
     return _v("vine", "Лоза растёт по этапам 1–7",
               "Линия времени проекта: ветвь — сужающиеся сегменты, каждый новый проявляется вытиранием по ходу роста, "
-              "лист узла раскрывается, текущий этап — винный лист; на последнем этапе вырастает гроздь-итог. Прогресс по колоде.",
+              "лист узла раскрывается, текущий этап — винный лист; на последнем этапе вырастает гроздь-итог. Прогресс по презентации.",
               sl, ["wine", "timeline", "progress", "growth"], 3)
 
 
@@ -1116,7 +1126,7 @@ def wheel(theme) -> Variant:
 # ============================================================================= живая последовательность 2: бокал
 
 def seq_glass(theme) -> Variant:
-    """Бокал через колоду: герой → слои красное/белое → слои выборок → слои разливаются в три бокала →
+    """Бокал через презентацию: герой → слои красное/белое → слои выборок → слои разливаются в три бокала →
     бокал-указатель у края (уровень = раздел) → шаг внутри раздела → огромный фон под графиком → финал."""
     red, white = wine_cols(theme)
     G = Glass("gl", R=1.15, Hb=2.2, stem=1.4)
@@ -1192,7 +1202,7 @@ def seq_glass(theme) -> Variant:
     S_.append(S(G.objs(theme, base, layers=[full], colors=[red], tilt=8) + smalls(park, lv_small) +
                 [O("!!fin", "text", 0.7, 1.4, 5.8, 1.6, txt=["MAE 0,55", "лучше Ridge и Dummy"], sz=36, b=True, font="head",
                    col="ink", spacing=0.95, z=90)], 900))
-    return _v("seq_glass", "Бокал живёт через колоду",
+    return _v("seq_glass", "Бокал живёт через презентацию",
               "8 состояний одного бокала: герой (наклон) → слои красное/белое → те же слои пересекаются как train/val/test → "
               "слои val и test перетекают в свои бокалы → бокал ×2,3 у левого края — указатель, уровень у деления раздела → "
               "шаг внутри раздела (уровень между делениями) → огромный бледный фон под MAE → финал с обратным наклоном.",

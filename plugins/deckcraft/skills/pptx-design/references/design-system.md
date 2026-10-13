@@ -1,101 +1,103 @@
-# Дизайн-система колоды
+# Presentation design system
 
-## 1. Бриф — шаблон
+## 1. Brief — template
 
 ```
-Аудитория:        кто смотрит, что уже знает
-Цель:             что зритель должен понять/решить после показа
-Режим плотности:  speaker | reading
-Визуальный тезис: одна фраза о характере оформления
-Мотив:            один повторяющийся графический элемент (не полоска, не рамка)
-Палитра:          тема из morphkit.theme или своя (роли ниже) + отчёт контраста
-Шрифты:           заголовки / текст / код (+ замены для проверки)
-Сетка:            12 колонок, поля, промежуток
-Язык движения:    раздел -> приём Morph; где петли и зачем
-Ограничения:      на чём показывают (PowerPoint 365/2019+?), язык, бренд
+Audience:         who is watching, what they already know
+Goal:             what the viewer should understand/decide after the show
+Density mode:     speaker | reading
+Visual thesis:    one phrase about the character of the design
+Motif:            one recurring graphic element (not a stripe, not a frame)
+Palette:          a theme from morphkit.theme or a custom one (roles below) + contrast report
+Fonts:            headings / text / code (+ substitutes for checking)
+Grid:             12 columns, margins, gutter
+Motion language:  section -> Morph technique; where the loops are and why
+Constraints:      what it is shown on (PowerPoint 365/2019+?), language, brand
 ```
 
-Тезис задаёт решения. «Лабораторный журнал» означает белую бумагу, острые углы, тонкие линейки, номера-колонтитулы, моно-подписи файлов и один винный акцент. «Тёмный погреб» — глубокий фон, мягкие скругления, светящиеся потоки и дуги прогресса.
+The thesis drives the decisions. "Lab notebook" means white paper, sharp corners, thin rules, page-number footers, mono file labels and a single wine-red accent. "Dark cellar" means a deep background, soft rounding, glowing flows and progress arcs.
 
-## 2. Палитра по ролям
+## 2. Palette by role
 
-| Роль | Назначение | Требование |
+| Role | Purpose | Requirement |
 |---|---|---|
-| `bg` | фон слайда | доминанта |
-| `surface`, `surface2` | карточки, узлы | близки к фону, отличимы от него |
-| `line` | линейки, соединители, сетка | тихий |
-| `ink` | основной текст, заголовки | ≥ 4,5:1 к bg и surface |
-| `ink2` | вторичный текст | ≥ 4,5:1 к bg, surface, surface2 |
-| `muted` | метки, колонтитулы | ≥ 4,5:1 к bg и surface (мелкий кегль!) |
-| `accent` | один острый акцент: активный шаг, главное число | ≥ 4,5:1 к bg и surface, если им пишут мелкий текст |
-| `on_accent` | текст на заливке accent | ≥ 4,5:1 к accent |
-| `accent2`, `accent3` | поддерживающие | не спорят с accent |
-| `good`, `warn`, `bad` | статусы | только для статусов, с подписью; не для «серии 4» |
-| `code_bg`, `code_ink`, `code_kw`, `code_str`, `code_num`, `code_com` | панели кода и терминала | code_ink и code_com ≥ 4,5:1 к code_bg |
-| `flow` | точки потоков | заметны на фоне и соединителях |
-| предметные (`red_wine`, `white_wine`) | цвет закреплён за сущностью | один цвет — одна сущность во всей колоде |
+| `bg` | slide background | dominant |
+| `surface`, `surface2` | cards, nodes | close to the background, distinguishable from it |
+| `line` | rules, connectors, grid | quiet |
+| `ink` | main text, titles | ≥ 4.5:1 against bg and surface |
+| `ink2` | secondary text | ≥ 4.5:1 against bg, surface, surface2 |
+| `muted` | labels, footers | ≥ 4.5:1 against bg and surface (small type!) |
+| `accent` | one sharp accent: active step, main number | ≥ 4.5:1 against bg and surface if used for small text |
+| `on_accent` | text on an accent fill | ≥ 4.5:1 against accent |
+| `accent2`, `accent3` | supporting | do not compete with accent |
+| `good`, `warn`, `bad` | statuses | statuses only, with a label; not for "series 4" |
+| `code_bg`, `code_ink`, `code_kw`, `code_str`, `code_num`, `code_com` | code and terminal panels | code_ink and code_com ≥ 4.5:1 against code_bg |
+| `flow` | flow dots | visible against the background and connectors |
+| subject colors (`red_wine`, `white_wine`) | the color is bound to an entity | one color — one entity across the whole presentation |
 
-Принципы:
-- **Доминирование:** 60–70% площади — фон и нейтральные поверхности, 1–2 поддерживающих цвета, один акцент. Равномерная радуга выглядит робко.
-- **От предмета:** если палитру можно перенести в презентацию на другую тему и она «сработает» — выбор недостаточно конкретен.
-- **Цвет следует за сущностью, а не за порядком:** красное вино всегда `red_wine`, на всех графиках.
-- **Проверка:** `theme.contrast_report()` перед сборкой; `lint()` проверяет каждый текст против фона под ним.
-- Для графиков категорий проверяй различимость при нарушениях цветового зрения (валидатор скилла dataviz, если доступен).
+Principles:
+- **Dominance:** 60–70% of the area is background and neutral surfaces, 1–2 supporting colors, one accent. An even rainbow looks timid.
+- **From the subject:** if the palette could be moved to a presentation on a different topic and still "work", the choice is not specific enough.
+- **Color follows the entity, not the order:** red wine is always `red_wine`, on every chart.
+- **Check:** `theme.contrast_report()` before building; `lint()` checks every text against the background beneath it.
+- For categorical charts, check distinguishability under color-vision deficiencies (the dataviz skill's validator, if available).
 
-Готовые направления в `morphkit/theme.py`: `LAB` (светлое редакционное, бордо + зелёный + янтарь), `CELLAR` (тёмное, вино и золото), `BLUEPRINT` (синий чертёж, оранжевая разметка, бирюзовые потоки). Своя тема — `Theme(name=…, colors={…})` с теми же ролями.
+Ready-made directions in `morphkit/theme.py`: `LAB` (light editorial, burgundy + green + amber), `CELLAR` (dark, wine and gold), `BLUEPRINT` (blue blueprint, orange markup, turquoise flows). A custom theme is `Theme(name=…, colors={…})` with the same roles.
 
-## 3. Типографика с кириллицей
+## 3. Typography with Cyrillic
 
-PowerPoint рисует шрифтом, который есть **у пользователя**, а проверка здесь — шрифтом-заменителем. Если ширины не совпадают, проверка переносов врёт.
+PowerPoint renders with the font **the user** has installed, while the check here uses a substitute font. If the widths differ, the line-break check lies.
 
-| В .pptx | Замена для проверки | Совпадение ширины | Кириллица |
+| In the .pptx | Substitute for checking | Width match | Cyrillic |
 |---|---|---|---|
-| Calibri | Carlito | точное | да |
-| Arial | Liberation Sans | точное | да |
-| Times New Roman | Liberation Serif | точное | да |
-| Courier New | Liberation Mono | точное | да |
-| Georgia, Cambria, Consolas, Segoe UI, Bahnschrift | DejaVu | приблизительное — запас 10% | да |
+| Calibri | Carlito | exact | yes |
+| Arial | Liberation Sans | exact | yes |
+| Times New Roman | Liberation Serif | exact | yes |
+| Courier New | Liberation Mono | exact | yes |
+| Georgia, Cambria, Consolas, Segoe UI, Bahnschrift | DejaVu | approximate — 10% margin | yes |
 
-Правила:
-- Основной текст и всё, где важна посадка, — из первой группы. Calibri — лучший баланс для русского текста на слайдах.
-- Шкала (pt): display 60 · h1 36 · h2 26 · lead 22 · body 18 · small 15 · caption 13 · code 14 · label 12. Минимум 12 (режим reading), 14 (speaker); основной текст ≥ 15 / 22.
-- «Крупнее — тоньше»: крупные заголовки обычного начертания; полужирный — у мелких меток (капитель + разрядка 1–1,5 pt) и чисел-акцентов.
-- Межстрочный 1,05–1,15 для текста, 0,95 для двухстрочных заголовков.
-- Переносы строк — явные (`\n`), автоподбор выключен. `Kit.title/text/card` подбирают кегль сами (`Kit.fit`), если строка не помещается.
-- Моноширинный — только для кода, путей, команд и чисел-колонтитулов.
-- Не больше двух семейств на колоду (плюс моно).
+Rules:
+- Body text and anything where fit matters comes from the first group. Calibri is the best balance for Russian text on slides.
+- Scale (pt): display 60 · h1 36 · h2 26 · lead 22 · body 18 · small 15 · caption 13 · code 14 · label 12. Minimum 12 (reading mode), 14 (speaker); body text ≥ 15 / 22.
+- "Bigger means lighter": large titles in regular weight; bold for small labels (small caps + 1–1.5 pt letter spacing) and accent numbers.
+- Line spacing 1.05–1.15 for text, 0.95 for two-line titles.
+- Line breaks are explicit (`\n`), autofit is off. `Kit.title/text/card` pick the font size themselves (`Kit.fit`) if a line does not fit.
+- Monospace only for code, paths, commands and footer numbers.
+- No more than two families per presentation (plus mono).
 
-## 4. Сетка
+## 4. Grid
 
-12 колонок на 13,333″: поля 0,65″, промежуток 0,25″, колонка ≈ 0,774″. `Grid.x(col)` — левая граница колонки (1…12), `Grid.w(span)` — ширина span колонок. Вертикаль: верхнее поле 0,55″ (метка раздела), заголовок от 0,9–1,25″, нижнее поле 0,5″ (колонтитул). Типовые членения: 12 · 6+6 · 5+7 · 4+4+4 · 3×4 · 8+4. Всё, что рядом, выравнивается по общей линии.
+12 columns on 13.333″: margins 0.65″, gutter 0.25″, column ≈ 0.774″. `Grid.x(col)` is the left edge of a column (1…12), `Grid.w(span)` is the width of span columns. Vertical: top margin 0.55″ (section label), title from 0.9–1.25″, bottom margin 0.5″ (footer). Typical splits: 12 · 6+6 · 5+7 · 4+4+4 · 3×4 · 8+4. Everything adjacent aligns to a shared line.
 
-## 5. Режимы плотности
+## 5. Density modes
 
 | | speaker | reading |
 |---|---|---|
-| Для | доклад, питч, живое объяснение | лекции для самостоятельного чтения, разборы, раздаточные |
-| На слайде | одна мысль, 1–3 пункта | структура + ключевые числа + короткие пояснения, до 6 пунктов |
-| Слов на слайд | ≤ 35 | ≤ 90 |
-| Кегль текста | ≥ 22 | ≥ 15 |
-| Заметки | тезисы речи | подробный конспект (80–180 слов) |
+| For | talk, pitch, live explanation | lectures for self-study, walkthroughs, handouts |
+| On a slide | one idea, 1–3 points | structure + key numbers + short explanations, up to 6 points |
+| Words per slide | ≤ 35 | ≤ 90 |
+| Text size | ≥ 22 | ≥ 15 |
+| Notes | talking points | detailed write-up (80–180 words) |
 
-Не помещается — делится на два слайда, а не уменьшается кегль.
+If it does not fit, split it into two slides instead of shrinking the font.
 
-## 6. Антишаблоны
+## 6. Anti-patterns
 
-Запрещено (признаки сгенерированных слайдов):
-- черта или полоска под заголовком; цветные полосы во всю ширину сверху/снизу; цветной край у карточки;
-- эмодзи вместо иконок; «иконка в кружке» на каждом пункте;
-- градиентные фоны «фиолетовый по белому»; тени и свечения без смысла;
-- слайд из одного заголовка и списка; одинаковый макет три слайда подряд;
-- центровка всего подряд; текст, касающийся краёв;
-- бежевый/кремовый фон «по умолчанию» (если не выбран осознанно);
-- придуманные цифры, «декоративные» метрики, lorem ipsum;
-- служебные надписи на слайде («вариант A», «шаблон»).
+Forbidden (signs of generated slides):
+- a line or stripe under the title; full-width colored bars at the top/bottom; a colored edge on a card;
+- emoji instead of icons; an "icon in a circle" on every bullet;
+- "purple on white" gradient backgrounds; shadows and glows without purpose;
+- a slide made of one title and a list; the same layout three slides in a row;
+- centering everything; text touching the edges;
+- a beige/cream background "by default" (unless chosen deliberately);
+- made-up figures, "decorative" metrics, lorem ipsum;
+- service labels on the slide ("option A", "template").
 
-Делать:
-- один мотив, повторённый с вариациями;
-- выразительный масштаб (одно большое число вместо пяти средних);
-- пустое пространство как часть композиции;
-- графики и схемы из фигур, чтобы они морфились;
-- подписи прямо у данных вместо легенд, где можно.
+Do:
+- one motif, repeated with variations;
+- expressive scale (one big number instead of five medium ones);
+- empty space as part of the composition;
+- charts and diagrams built from shapes so they morph;
+- labels right at the data instead of legends, where possible.
+
+_Russian original: design-system.ru.md_

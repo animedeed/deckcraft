@@ -1,133 +1,135 @@
-# 32 макета
+# 32 layouts
 
-Для каждого макета указаны:
-- **фокус** — где он стоит;
-- **сетка** — колонки из 12;
-- **шапка** — система A–F из `composition.md`, §6;
-- **движение** — какие приёмы Morph из `pptx-morph/references/techniques.md` (номера в скобках) с ним дружат;
-- **плотность.**
+Each layout lists:
+- **focus** — where it sits;
+- **grid** — columns out of 12;
+- **header** — system A–F from `composition.md`, §6;
+- **motion** — which Morph techniques from `pptx-morph/references/techniques.md` (numbers in parentheses) work well with it;
+- **density.**
 
-В `Slide(layout=…)` пишется имя макета. По ним `lint` проверяет разнообразие: на 8 сцен подряд нужно ≥ 6 разных макетов, серия шагов одного макета считается одной сценой. Координаты базовых архетипов — `layouts-basic.md`.
+`Slide(layout=…)` takes the layout name. `lint` uses these names to check variety: any 8 consecutive scenes need ≥ 6 different layouts; a series of steps in one layout counts as one scene. Coordinates of the basic archetypes are in `layouts-basic.md`.
 
-## Открытия и разделы
+## Openings and sections
 
-1. **cover** — титул.
-   - Заголовок display в колонках 1–7, мотив колоды в 8–12 (колесо, кольцо, мир-граф) с вылетом за край.
-   - Шапка E, контекст курса — мелкой строкой над заголовком.
-   - Движение: камера (1), вход «Вертушка» мотива (36).
-2. **chapter** — слайд раздела.
-   - Номер раздела 300+ pt как фактура (D), название h1, одна строка «что будет».
-   - Движение: карточка → фон (6); стиль раздела тот же, что у всей колоды.
-3. **statement** — заявление.
-   - Одна фраза h1 / display на 60% ширины, слева или по центру, под ней источник 13 pt. Шапка E.
-   - Слайд-вдох.
-4. **agenda-rail** — маршрут.
-   - Таблетки шагов (рельс) по горизонтали или вертикали, текущий раскрыт. Шапка F.
-   - Движение: рельс (40), карта разделов → шапка (5).
-5. **route-world** — карта мира.
-   - Мир-граф или схема всего курса, камера на общем плане, текущий узел подсвечен. Шапка E/C.
-   - Движение: камера (1), параллакс (2).
+1. **cover** — title slide.
+   - Display title in columns 1–7, the presentation motif in 8–12 (wheel, ring, world graph) bleeding off the edge.
+   - Header E; course context as a small line above the title.
+   - Motion: camera (1), "Pinwheel" entrance of the motif (36).
+2. **chapter** — section slide.
+   - Section number 300+ pt as texture (D), h1 title, one line of "what's ahead".
+   - Motion: card → background (6); the section style is the same as the whole presentation's.
+3. **statement** — statement.
+   - One h1 / display phrase at 60% width, left or centered, with the source at 13 pt below. Header E.
+   - A breather slide.
+4. **agenda-rail** — route.
+   - Step pills (a rail) horizontally or vertically, the current one expanded. Header F.
+   - Motion: rail (40), section map → header (5).
+5. **route-world** — world map.
+   - A world graph or diagram of the whole course, camera on the wide shot, current node highlighted. Header E/C.
+   - Motion: camera (1), parallax (2).
 
-## Числа
+## Numbers
 
-6. **hero-number** — число-герой.
-   - Одно число 96–140 pt на трети слайда, висячая подпись, контекст 13 pt; справа — маленькая схема или ничего. Шапка B/E.
-   - Движение: число появляется эффектом (51); правка — зачёркивание и новое значение.
-7. **kpi-row** — 3–4 числа.
-   - Ряд stat по колонкам 3/4, одно выделено акцентом, под рядом вывод. Шапка A/B.
-   - Движение: рост внутри слайда (51), столбики из нуля (19).
-8. **ring-pair** — доля / качество.
-   - Кольцо-прогресс крупно (колонки 1–5) + малое кольцо-сравнение + список справа. Шапка B.
-   - Движение: кольцо с заливкой по кругу (21), пересортировка (20).
-9. **doc-units** — величина в листах-документах.
-   - Значение показано листами с загнутым углом (3,3 = три листа + полоска), сравнение двух рядов, число рядом. Шапка B.
-   - Движение: появление листов слева направо (рост внутри слайда, приём 51), пиктограммы (54).
-10. **dot-field** — каждая точка = наблюдение.
-    - Сетка точек на 60% слайда, подпись «одна точка = N», справа вывод. Шапка B.
-    - Движение: сетка → группы (25), → разброс (24), → гистограмма (26), схлопывание (27).
+6. **hero-number** — hero number.
+   - One number at 96–140 pt on a third of the slide, hanging caption, context at 13 pt; on the right a small diagram or nothing. Header B/E.
+   - Motion: the number appears with an effect (51); a correction is a strike-through and a new value.
+7. **kpi-row** — 3–4 numbers.
+   - A row of stats across 3/4 columns, one highlighted with the accent, a conclusion under the row. Header A/B.
+   - Motion: in-slide growth (51), bars from zero (19).
+8. **ring-pair** — share / quality.
+   - A large progress ring (columns 1–5) + a small comparison ring + a list on the right. Header B.
+   - Motion: ring with circular fill (21), re-sorting (20).
+9. **doc-units** — a quantity in document sheets.
+   - The value is shown as sheets with a folded corner (3.3 = three sheets + a strip), comparing two rows, the number alongside. Header B.
+   - Motion: sheets appear left to right (in-slide growth, technique 51), pictograms (54).
+10. **dot-field** — each dot = one observation.
+    - A dot grid on 60% of the slide, caption "one dot = N", conclusion on the right. Header B.
+    - Motion: grid → groups (25), → scatter (24), → histogram (26), collapse (27).
 
-## Сравнение и выбор
+## Comparison and choice
 
-11. **split-compare** — до / после.
-    - Две равные половины (6+6), одинаковая структура, вердикт внизу. Шапка A.
-    - Движение: раскол экрана (43).
-12. **matrix** — решения × свойства.
-    - Таблица точек или галочек, наша строка внизу. Шапка A.
-    - Движение: прожектор по строкам (14, 15).
-13. **ranking** — кто лучше.
-    - Горизонтальные столбики по убыванию, худший — цветом статуса, вывод сбоку. Шапка B.
-    - Движение: из нуля → пересортировка (19, 20).
-14. **scatter-verdict** — два измерения.
-    - Точечный график на 5–7 колонках, наша точка — акцент и крупнее, справа индикатор или число. Шапка B.
-    - Движение: разлёт из начала (29).
-15. **intervals** — честное сравнение.
-    - Усы доверительных интервалов вокруг нуля, подписи у концов. Шапка A.
-    - Движение: интервалы от нуля (28).
+11. **split-compare** — before / after.
+    - Two equal halves (6+6), identical structure, verdict at the bottom. Header A.
+    - Motion: screen split (43).
+12. **matrix** — solutions × properties.
+    - A table of dots or check marks, our row at the bottom. Header A.
+    - Motion: spotlight across rows (14, 15).
+13. **ranking** — who's better.
+    - Horizontal bars in descending order, the worst in a status color, conclusion on the side. Header B.
+    - Motion: from zero → re-sorting (19, 20).
+14. **scatter-verdict** — two dimensions.
+    - Scatter plot across 5–7 columns, our dot in the accent and larger, an indicator or number on the right. Header B.
+    - Motion: burst from the origin (29).
+15. **intervals** — fair comparison.
+    - Confidence-interval whiskers around zero, labels at the ends. Header A.
+    - Motion: intervals from zero (28).
 
-## Процессы и схемы
+## Processes and diagrams
 
-16. **pipeline** — конвейер.
-    - 4–6 узлов в ряд, связи с потоками, активный — рамкой-маркером, ниже 2–3 пояснения. Шапка A/C.
-    - Движение: маркер (11), поток (12), камера.
-17. **wheel** — цикл или шаги по кругу.
-    - Колесо / цветок в колонках 1–7 на всю высоту, справа шапка и карточка шага. Шапка C.
-    - Движение: цветок-указатель за краем экрана (фаза 3), вертушка (36).
-18. **layer-stack** — архитектура слоями.
-    - Список плашек ↔ изометрическая стопка, подписи слоёв. Шапка C.
-    - Движение: изометрия (17).
-19. **network** — граф связей.
-    - Узлы и рёбра, источник изменения в фокусе, затронутые — маркерами. Шапка C/E.
-    - Движение: рост сети (16), импульс (10), круги на воде (13).
-20. **annotated** — схема с выносками.
-    - Схема на 8 колонках, 3–5 выносок по краям, линии-указатели. Шапка B.
-    - Движение: прожектор (14), выноски по очереди (`anim_*`).
-21. **nested-zoom** — внутри узла.
-    - Узел → крупно → его внутренняя схема. Шапка E.
-    - Движение: матрёшка (3).
-22. **timeline** — этапы во времени.
-    - Шкала по горизонтали (или вертикали на узком тексте), маркер «сейчас», события подписаны у шкалы. Шапка A/F.
-    - Движение: лента + камера (4), пульс на маркере.
+16. **pipeline** — pipeline.
+    - 4–6 nodes in a row, links with flows, the active one marked by a marker frame, 2–3 explanations below. Header A/C.
+    - Motion: marker (11), flow (12), camera.
+17. **wheel** — a cycle or steps around a circle.
+    - Wheel / flower in columns 1–7 at full height, header and step card on the right. Header C.
+    - Motion: flower pointer beyond the screen edge (phase 3), pinwheel (36).
+18. **layer-stack** — layered architecture.
+    - List of plates ↔ isometric stack, layer labels. Header C.
+    - Motion: isometry (17).
+19. **network** — graph of links.
+    - Nodes and edges, the source of the change in focus, affected nodes marked. Header C/E.
+    - Motion: network growth (16), pulse (10), ripples (13).
+20. **annotated** — diagram with callouts.
+    - Diagram across 8 columns, 3–5 callouts around the edges, leader lines. Header B.
+    - Motion: spotlight (14), callouts one by one (`anim_*`).
+21. **nested-zoom** — inside a node.
+    - Node → close-up → its internal diagram. Header E.
+    - Motion: nesting doll (3).
+22. **timeline** — stages over time.
+    - Horizontal scale (or vertical with narrow text), a "now" marker, events labeled at the scale. Header A/F.
+    - Motion: ribbon + camera (4), pulse on the marker.
 
-## Код и файлы
+## Code and files
 
-23. **code-walk** — код с пояснениями.
-    - Панель кода в колонках 1–7 с подсвеченными строками, пояснения в 8–12 напротив своих строк. Шапка A.
-    - Движение: подсветка переезжает (маркер 11).
-24. **terminal** — запуск.
-    - Терминал с курсором-петлёй, вывод, справа «что это значит». Шапка A.
-    - Движение: мигание курсора, `anim_*` строк вывода.
-25. **file-tree** — структура.
-    - Дерево файлов слева, справа «что где лежит и зачем», текущие файлы выделены. Шапка A.
-    - Движение: раскрытие узла дерева (18).
+23. **code-walk** — code with explanations.
+    - Code panel in columns 1–7 with highlighted lines, explanations in 8–12 opposite their lines. Header A.
+    - Motion: the highlight moves (marker 11).
+24. **terminal** — a run.
+    - Terminal with a looping cursor, output, "what this means" on the right. Header A.
+    - Motion: cursor blink, `anim_*` for output lines.
+25. **file-tree** — structure.
+    - File tree on the left, "what lives where and why" on the right, current files highlighted. Header A.
+    - Motion: tree node expansion (18).
 
-## Карточки и навигация
+## Cards and navigation
 
-26. **bento** — сетка разного размера.
-    - Главная карточка 6×2, остальные 3×1. Шапка B.
-    - Движение: раскрытие карточки (39).
-27. **carousel** — лента примеров.
-    - Карточка спереди крупно, соседние меньше и бледнее. Шапка C.
-    - Движение: карусель (42).
-28. **fan-stack** — колода вариантов.
-    - Карточки веером или стопкой, выбранная выезжает. Шапка B.
-    - Движение: веер (41), переворот (46).
-29. **tabs-accordion** — разделы одного объекта.
-    - Вкладки или аккордеон, бегунок под активной. Шапка A.
-    - Движение: вкладки (44), аккордеон (45).
-30. **qa-cards** — вопросы защиты.
-    - 3 карточки-вопроса; ответ — переворот или раскрытие. Шапка A/B.
-    - Движение: переворот внутри слайда (46), раскрытие (39).
+26. **bento** — grid of mixed sizes.
+    - Main card 6×2, the rest 3×1. Header B.
+    - Motion: card expansion (39).
+27. **carousel** — strip of examples.
+    - Front card large, neighbors smaller and paler. Header C.
+    - Motion: carousel (42).
+28. **fan-stack** — presenting options.
+    - Cards in a fan or stack, the chosen one slides out. Header B.
+    - Motion: fan (41), flip (46).
+29. **tabs-accordion** — sections of one object.
+    - Tabs or an accordion, a slider under the active one. Header A.
+    - Motion: tabs (44), accordion (45).
+30. **qa-cards** — defense questions.
+    - 3 question cards; the answer is a flip or an expansion. Header A/B.
+    - Motion: in-slide flip (46), expansion (39).
 
-## Финал
+## Finale
 
-31. **mistake** — типовая ошибка.
-    - «Как неправильно / как правильно» двумя колонками, плашка статуса `bad`/`good` с подписью. Шапка B.
-    - Движение: зачёркивание и новое значение, перелив формы (32).
-32. **recap** — итог, рифма с титулом.
-    - Тот же мотив или мир, что на титуле, результат подсвечен, 3 вывода, контакты или следующий шаг. Шапка E.
-    - Движение: отъезд камеры (1), сборка пазла (34).
+31. **mistake** — a typical mistake.
+    - "Wrong / right" in two columns, a `bad`/`good` status plate with a label. Header B.
+    - Motion: strike-through and new value, shape morph (32).
+32. **recap** — summary, rhyming with the title slide.
+    - The same motif or world as on the title slide, the result highlighted, 3 conclusions, contacts or next step. Header E.
+    - Motion: camera pull-back (1), puzzle assembly (34).
 
-## Подбор макетов для раздела (пример: лекция по практике)
-`chapter → hero-number → pipeline (серия) → code-walk → dot-field → ranking → mistake → qa-cards`.
+## Choosing layouts for a section (example: a practical-class lecture)
+`chapter → hero-number → pipeline (series) → code-walk → dot-field → ranking → mistake → qa-cards`.
 
-Восемь сцен, восемь разных макетов, плотность чередуется: вдох → схема → плотно → данные → вдох (вывод) → плотно → вдох.
+Eight scenes, eight different layouts, alternating density: breather → diagram → dense → data → breather (conclusion) → dense → breather.
+
+_Russian original: layouts.ru.md_

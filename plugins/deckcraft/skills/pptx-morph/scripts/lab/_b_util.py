@@ -48,12 +48,12 @@ def ellipse_pts(cx, cy, rx, ry, n=96, tilt=0.0, a0=0.0, closed=True) -> list[tup
 
 # ----------------------------------------------------------------------------- формы с управляемым порядком точек
 
-def arc_band(cx, cy, r_in, r_out, a0, a1, n=48) -> V.Polygon:
+def arc_band(cx, cy, r_in, r_out, a0, a1, n=96) -> V.Polygon:
     """Сегмент кольца: внешняя дуга a0→a1 (n точек), затем внутренняя a1→a0 (n точек). Всегда 2n точек."""
     return V.Polygon(arc_pts(cx, cy, r_out, a0, a1, n) + arc_pts(cx, cy, r_in, a1, a0, n))
 
 
-def bar_band(x, y, length, thick, n=48) -> V.Polygon:
+def bar_band(x, y, length, thick, n=96) -> V.Polygon:
     """Прямая полоса с тем же порядком точек, что у arc_band: верх слева направо, низ справа налево."""
     length = max(length, 1e-3)
     top = [(x + length * k / (n - 1), y) for k in range(n)]
@@ -183,7 +183,7 @@ def ax(name: str, g_abs, rot: float, pivot=(9.0, 3.95), R: float = 9.6, **kw) ->
     return axis(name, local, pivot, R, rot=rot, meta=meta, **kw)
 
 
-def rect_band(x, y, w, h, n=48, vertical=False) -> V.Polygon:
+def rect_band(x, y, w, h, n=96, vertical=False) -> V.Polygon:
     """Прямоугольник с порядком точек arc_band (2n точек). vertical=False: верх слева направо (n), низ справа налево;
     vertical=True: левая сторона снизу вверх (n), правая сверху вниз — для колонок из сегментов кольца."""
     if not vertical:

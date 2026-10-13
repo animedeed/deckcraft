@@ -35,6 +35,7 @@ except ImportError as exc:  # pragma: no cover
     raise ImportError("morphkit.vector требует shapely: pip install shapely") from exc
 
 SEG = 48  # отрезков на четверть окружности (192 на круг)
+RESAMPLE_MIN = 120  # меньше — на крупных формах видны грани и срезанные кончики (отзыв пользователя)
 
 
 # ----------------------------------------------------------------------------- примитивы
@@ -109,12 +110,14 @@ def lens_from_base(base: tuple[float, float], length: float, width: float, angle
 
 
 def bud(base: tuple[float, float], length: float, width: float, layers: int = 5, h_ratio: float = 0.80,
-        w_ratio: float = 0.84, angle: float = -90.0, n: int = 0) -> list[Polygon]:
+        w_ratio: float = 0.84, angle: float = -90.0, n: int = 0, nested: bool = True) -> list[Polygon]:
     """Многослойный «бутон» как в эталонном видео: вложенные линзы с общей вершиной в base (каждая следующая
     короче и уже) -> фрагменты: полосы-полумесяцы снаружи внутрь + ядро. Возвращает [полоса0, …, ядро].
     n > 0 — каждая часть ресемплится до n точек (для перелива формы)."""
     lenses = [lens_from_base(base, length * h_ratio ** k, width * w_ratio ** k, angle) for k in range(layers)]
-    parts = [lenses[k].difference(lenses[k + 1]) for k in range(layers - 1)] + [lenses[-1]]
+    # nested: целые линзы стопкой (внутренняя поверх внешней) — видимая полоса та же, но стыков-щелей между
+    # соседними частями нет (отзыв: «прорывы» между слоями цветка). False — полосы-полумесяцы (для разлёта на части)
+    parts = list(lenses) if nested else [lenses[k].difference(lenses[k + 1]) for k in range(layers - 1)] + [lenses[-1]]
     out = []
     for g in parts:
         if isinstance(g, MultiPolygon):
@@ -193,14 +196,51 @@ def radial(g, n: int, pivot: tuple[float, float], step: float | None = None) -> 
     return [affinity.rotate(g, step * k, origin=pivot) for k in range(n)]
 
 
-def resample(g, n: int = 160, start: str | float = "top") -> Polygon:
+def _corners(pts: list[tuple[float, float]], deg: float = 28.0) -> list[int]:
+    """Индексы острых вершин замкнутой ломаной: поворот направления больше deg градусов."""
+    out, m = [], len(pts)
+    for k in range(m):
+        ax, ay = pts[k - 1]
+        bx, by = pts[k]
+        cx, cy = pts[(k + 1) % m]
+        a1, a2 = math.atan2(by - ay, bx - ax), math.atan2(cy - by, cx - bx)
+        turn = abs((math.degrees(a2 - a1) + 180) % 360 - 180)
+        if turn > deg:
+            out.append(k)
+    return out
+
+
+def resample(g, n: int = 160, start: str | float = "top", keep_corners: bool = True) -> Polygon:
     """Внешний контур ровно из n точек, обход по часовой стрелке на экране, первая точка — самая верхняя
-    (start='top') или ближайшая к углу start (градусы вокруг центра). Готовит пары форм к морфингу."""
+    (start='top') или ближайшая к углу start (градусы вокруг центра). Готовит пары форм к морфингу.
+    keep_corners: острые вершины (кончик лепестка, угол клёпки) остаются точками контура, остальные точки
+    распределяются по дугам между ними пропорционально длине — без этого равномерный шаг срезает углы."""
+    n = max(int(n), RESAMPLE_MIN)
     poly = max(g.geoms, key=lambda p: p.area) if isinstance(g, MultiPolygon) else g
     ring = LineString(orient(Polygon(poly.exterior), sign=1.0).exterior.coords)  # против ч. с. в осях y-вверх
+    src = list(ring.coords)[:-1]
+    corners = _corners(src) if keep_corners else []
+    if len(corners) > n // 3:  # слишком много «углов» (мелкая ломаная) — обычный равномерный шаг
+        corners = []
     L = ring.length
-    pts = [ring.interpolate(L * k / n) for k in range(n)]
-    pts = [(p.x, p.y) for p in pts]
+    if not corners:
+        pts = [ring.interpolate(L * k / n) for k in range(n)]
+        pts = [(q.x, q.y) for q in pts]
+    else:
+        # длины дуг между соседними углами и доля точек на каждую (угол — сама точка)
+        dist = [ring.project(Point(src[c])) for c in corners]
+        arcs = [((dist[(i + 1) % len(dist)] - dist[i]) % L) or L for i in range(len(dist))]
+        free = n - len(corners)
+        share = [a / L * free for a in arcs]
+        cnt = [int(x) for x in share]
+        for i in sorted(range(len(cnt)), key=lambda i: -(share[i] - cnt[i]))[:free - sum(cnt)]:
+            cnt[i] += 1
+        pts = []
+        for i, d0 in enumerate(dist):
+            pts.append(src[corners[i]])
+            for j in range(1, cnt[i] + 1):
+                q = ring.interpolate((d0 + arcs[i] * j / (cnt[i] + 1)) % L)
+                pts.append((q.x, q.y))
     cx, cy = poly.centroid.x, poly.centroid.y
     if start == "top":
         k0 = min(range(n), key=lambda k: (round(pts[k][1], 6), abs(pts[k][0] - cx)))
@@ -228,22 +268,70 @@ def _rings(g) -> list[list[tuple[float, float]]]:
     return out
 
 
+SMOOTH_TARGET = 240  # точек на контур после сглаживания (не больше ×4 к исходному)
+
+
+def smooth_ring(ring: list[tuple[float, float]], corner_deg: float = 35.0) -> list[tuple[float, float]]:
+    """Гладкий контур без изменения формы: каждая грань делится на k частей кубическим сплайном Эрмита через
+    исходные точки (касательная Катмулла–Рома в гладкой вершине, нулевая — в угле: прямые остаются прямыми,
+    углы — острыми). k зависит только от числа точек, поэтому у пары Morph с равным числом точек оно одинаково."""
+    m = len(ring)
+    if m < 3 or m >= SMOOTH_TARGET:
+        return ring
+    k = max(1, min(4, -(-SMOOTH_TARGET // m)))
+    if k == 1:
+        return ring
+    P = ring
+
+    def turn(i):
+        a, b, c = P[i - 1], P[i], P[(i + 1) % m]
+        t = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(b[1] - a[1], b[0] - a[0]))
+        return abs((t + 180) % 360 - 180)
+
+    tan = []
+    for i in range(m):
+        if turn(i) > corner_deg:
+            tan.append((0.0, 0.0))
+        else:
+            a, c = P[i - 1], P[(i + 1) % m]
+            tan.append(((c[0] - a[0]) / 2, (c[1] - a[1]) / 2))
+    out = []
+    for i in range(m):
+        (x0, y0), (x1, y1) = P[i], P[(i + 1) % m]
+        (tx0, ty0), (tx1, ty1) = tan[i], tan[(i + 1) % m]
+        out.append((x0, y0))
+        for j in range(1, k):
+            t = j / k
+            h00, h10, h01, h11 = 2 * t**3 - 3 * t**2 + 1, t**3 - 2 * t**2 + t, -2 * t**3 + 3 * t**2, t**3 - t**2
+            out.append((h00 * x0 + h10 * tx0 + h01 * x1 + h11 * tx1, h00 * y0 + h10 * ty0 + h01 * y1 + h11 * ty1))
+    return out
+
+
+def smooth_rings(rings, w: float = 1.0, h: float = 1.0):
+    """smooth_ring для нормированных контуров рамки w × h (углы считаются в настоящих пропорциях)."""
+    w, h = max(w, 1e-6), max(h, 1e-6)
+    return [[(x / w, y / h) for x, y in smooth_ring([(px * w, py * h) for px, py in r])] for r in rings]
+
+
 def shape(name: str, g, pivot: tuple[float, float] | None = None, rot: float = 0.0, frame=None,
           fill: str | None = "accent", ln: str | None = None, lw: float = 0.0, z: int = 6, world: bool = False,
           grad: dict | None = None, d3: dict | None = None, **kw) -> O:
     """Объект-свободная форма. pivot — ось вращения (рамка-квадрат с центром в pivot);
     frame — явная рамка (x, y, w, h); по умолчанию рамка = габарит формы.
     grad — градиент (см. gradient()); d3 — 3D (см. rot3d()). Остальные поля O — через kw."""
-    minx, miny, maxx, maxy = g.bounds
+    rings = _rings(g)
+    xs = [x for r in rings for x, _ in r]
+    ys = [y for r in rings for _, y in r]
+    minx, miny, maxx, maxy = min(xs), min(ys), max(xs), max(ys)
     if frame is not None:
         fx, fy, fw, fh = frame
     elif pivot is not None:
         px, py = pivot
-        R = max(math.hypot(x - px, y - py) for ring in _rings(g) for x, y in ring) * 1.0001
+        R = max(math.hypot(x - px, y - py) for ring in rings for x, y in ring) * 1.0001
         fx, fy, fw, fh = px - R, py - R, 2 * R, 2 * R
     else:
         fx, fy, fw, fh = minx, miny, max(maxx - minx, 1e-4), max(maxy - miny, 1e-4)
-    norm = [[((x - fx) / fw, (y - fy) / fh) for x, y in ring] for ring in _rings(g)]
+    norm = [[((x - fx) / fw, (y - fy) / fh) for x, y in ring] for ring in rings]
     bbox = ((minx - fx) / fw, (miny - fy) / fh, (maxx - fx) / fw, (maxy - fy) / fh)
     meta = dict(kw.pop("meta", {}))
     meta.update({"vec": norm, "bbox": bbox})

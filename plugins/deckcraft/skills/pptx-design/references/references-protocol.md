@@ -1,63 +1,65 @@
-# Протокол разбора референсов
+# Reference analysis protocol
 
-Цель — превратить чужой пример (видео TikTok/Reels, колоду .pptx, пин с Pinterest, кадр с Behance) в **рецепт**, который morphkit воспроизводит, и записать его в каталог приёмов.
+The goal is to turn someone else's example (a TikTok/Reels video, a .pptx presentation, a Pinterest pin, a Behance frame) into a **recipe** that morphkit reproduces, and to record it in the technique catalog.
 
-## 1. Где лежат примеры
+## 1. Where the examples live
 
-- Ветка `design-refs`, папка `refs/` — туда их кладёт пользователь. Лимит на вес файла в чате обходится через GitHub.
+- Branch `design-refs`, folder `refs/` — the user puts them there. The chat's file size limit is bypassed through GitHub.
   ```
   git fetch origin design-refs
   git ls-tree -r --name-only origin/design-refs refs/
-  git show origin/design-refs:refs/<файл> > <scratchpad>/refs/<файл>
+  git show origin/design-refs:refs/<file> > <scratchpad>/refs/<file>
   ```
-- Ссылки (TikTok, Pinterest) часто не открываются без JavaScript. Тогда попроси пользователя скачать ролик или скриншоты в `refs/`.
+- Links (TikTok, Pinterest) often do not open without JavaScript. Then ask the user to download the video or screenshots into `refs/`.
 
-## 2. Видео → кадры
+## 2. Video → frames
 
 `python pptx-morph/scripts/refs_frames.py ROLIK.mp4 OUT_DIR [--scene 0.08] [--every 0.5]`:
-- кадры на смене сцены (порог `--scene`) и через каждые N секунд;
-- лист миниатюр `sheet.png` с отметками времени.
+- frames at scene changes (threshold `--scene`) and every N seconds;
+- a thumbnail sheet `sheet.png` with timestamps.
 
-По листу:
-1. Найди **ключевые состояния** — кадры, где движение остановилось. Это будущие слайды.
-2. Найди **промежуточные кадры** — по ним видно, как именно идёт движение: по дуге или по хорде, переливом или затуханием, вращением вокруг чего.
-3. Засеки длительности: от начала до конца движения и паузы.
+From the sheet:
+1. Find the **key states** — frames where the motion has stopped. These are the future slides.
+2. Find the **in-between frames** — they show exactly how the motion goes: along an arc or a chord, by morphing or fading, rotating around what.
+3. Time the durations: from the start to the end of the motion, and the pauses.
 
-## 3. Колода → устройство
+## 3. Presentation → how it is built
 
-`python pptx-morph/scripts/refs_deck.py DECK.pptx [--slides 3-7]` выводит по каждому слайду:
-- переход: тип, длительность, режим Morph;
-- автопереход (advTm);
-- объекты: имя, тип (prstGeom / custGeom / pic / text), x, y, w, h, поворот, 3D, заливка;
-- пары `!!` с соседними слайдами;
-- шкалу анимаций: эффекты, presetID, класс, задержки, длительности, повторы.
+`python pptx-morph/scripts/refs_deck.py DECK.pptx [--slides 3-7]` prints for each slide:
+- transition: type, duration, Morph mode;
+- auto-advance (advTm);
+- objects: name, type (prstGeom / custGeom / pic / text), x, y, w, h, rotation, 3D, fill;
+- `!!` pairs with neighboring slides;
+- the animation timeline: effects, presetID, class, delays, durations, repeats.
 
-По выводу видно, **как сделано на самом деле**: что морфится, что появляется эффектом, где служебные слайды, какие объекты паркуются за краем.
+The output shows **how it is actually done**: what morphs, what appears via an effect, where the service slides are, which objects are parked beyond the edge.
 
-## 4. Рецепт-карточка
+## 4. Recipe card
 
 ```
-Название:       «Колесо с выдвижением активного лепестка»
-Источник:       refs/flower.mp4, 0:12–0:31 (Dr. Saeed Faal) / refs/deck.pptx, слайды 4–6
-Смысл:          шаги цикла; активный шаг выходит вперёд
-Состояния:      S1 — цветок собран; S2 — поворот на 36°, лепесток 2 выдвинут; …
-Как движется:   вращение вокруг центра цветка (дуга), выдвижение — перелив формы; 1,1 с
-Как в morphkit: V.petal + V.shape(pivot=центр, rot=…); активный — другой контур с тем же n; Fx("entrance_spinner") на входе
-Ловушки:        шаг > 45° — полушаги; подписи по хорде; цвета соседних лепестков близкие
-Статус:         воспроизведено в gallery_vector.py, слайды 3–6; ждёт проверки показом
+Name:           “Wheel with the active petal sliding out”
+Source:         refs/flower.mp4, 0:12–0:31 (Dr. Saeed Faal) / refs/deck.pptx, slides 4–6
+Meaning:        cycle steps; the active step comes forward
+States:         S1 — flower assembled; S2 — rotated by 36°, petal 2 slid out; …
+How it moves:   rotation around the flower's center (arc), sliding out — shape morph; 1.1 s
+In morphkit:    V.petal + V.shape(pivot=center, rot=…); active — a different outline with the same n; Fx("entrance_spinner") on entry
+Pitfalls:       step > 45° — half-steps; labels travel along a chord; neighboring petals have close colors
+Status:         reproduced in gallery_vector.py, slides 3–6; awaiting a slideshow check
 ```
 
-## 5. Воспроизвести и проверить
+## 5. Reproduce and check
 
-1. Собрать минимальный пример (2–4 слайда) в morphkit, проверить `lint`, `xsd_check` и миниатюры.
-2. Отправить пользователю на запись показа, сравнить с референсом по кадрам.
-3. Удачный рецепт записать:
-   - в `pptx-morph/references/techniques.md` — новый пункт с помощником;
-   - в `layouts.md` — если это новый макет;
-   - вывод из показа — в `WORKLOG.md`.
+1. Build a minimal example (2–4 slides) in morphkit, check `lint`, `xsd_check` and the thumbnails.
+2. Send it to the user to record a slideshow, compare it with the reference frame by frame.
+3. Record a successful recipe:
+   - in `pptx-morph/references/techniques.md` — a new item with a helper;
+   - in `layouts.md` — if it is a new layout;
+   - the takeaway from the slideshow — in `WORKLOG.md`.
 
-## 6. Чего не делать
+## 6. What not to do
 
-- Не копировать чужие изображения, логотипы, тексты и фирменные шаблоны. Берём приём: движение, композицию, ритм.
-- Не воспроизводить «вау» ради «вау». У каждого рецепта должен быть **смысл** (п. 4), иначе в каталог он не идёт.
-- Не угадывать устройство по одному кадру: сначала промежуточные кадры или дамп колоды.
+- Do not copy other people's images, logos, texts and branded templates. We take the technique: motion, composition, rhythm.
+- Do not reproduce “wow” for the sake of “wow”. Every recipe must have a **meaning** (item 4), otherwise it does not go into the catalog.
+- Do not guess how it is built from a single frame: first the in-between frames or a dump of the presentation.
+
+_Russian original: references-protocol.ru.md_

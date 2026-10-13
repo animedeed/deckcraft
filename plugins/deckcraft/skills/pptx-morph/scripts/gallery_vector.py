@@ -3,7 +3,7 @@
 
     python gallery_vector.py OUT_DIR [--check]
 
-Колода — тест для записи показа в PowerPoint: в заметках каждого слайда написано, что проверить.
+Презентация — тест для записи показа в PowerPoint: в заметках каждого слайда написано, что проверить.
 """
 
 from __future__ import annotations

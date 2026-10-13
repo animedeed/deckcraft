@@ -1,4 +1,4 @@
-<title>Бриф колоды</title>
+<title>Бриф презентации</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
@@ -43,8 +43,12 @@ section > p.hint { margin: 0 0 14px; color: var(--muted); max-width: 70ch }
   background: var(--accent); color: var(--accent-ink) }
 .reason { font-size: 13px; color: var(--accent); }
 .rows { display: grid; gap: 10px }
-.row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface) }
+.row { display: grid; grid-template-columns: 190px 240px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface) }
+@media (max-width: 1100px) { .row { grid-template-columns: 190px minmax(0, 1fr) } .row .pv { grid-column: 1 / -1; max-width: 420px } }
 @media (max-width: 640px) { .row { grid-template-columns: minmax(0, 1fr) } }
+.row .pv { position: relative; border-radius: 8px; overflow: hidden; background: var(--line); aspect-ratio: 16 / 9 }
+.row .pv img { display: block; width: 100%; height: 100%; object-fit: cover }
+.row .pv .cap { position: absolute; left: 6px; bottom: 6px; font: 600 11px/1 var(--f-mono); padding: 4px 6px; border-radius: 5px; background: var(--surface); color: var(--ink2) }
 .row .sec { font-weight: 600 }
 .row .sec small { display: block; font-weight: 400; color: var(--muted); font-size: 12.5px }
 .chips { display: flex; flex-wrap: wrap; gap: 6px }
@@ -69,12 +73,28 @@ dd { margin: 0; font-weight: 500; overflow-wrap: anywhere }
 .mode { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
 pre.json { margin: 0; max-height: 200px; overflow: auto; font: 11.5px/1.45 var(--f-mono); background: var(--bg); border-radius: 8px; padding: 10px; color: var(--ink2) }
 .mono { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted) }
+.num { position: absolute; top: 8px; right: 8px; min-width: 24px; height: 24px; display: grid; place-items: center; border-radius: 999px;
+  font: 700 12px/1 var(--f-mono); background: var(--ink); color: var(--bg) }
+.chip .lead-mark { font: 700 10px/1 var(--f-mono); margin-left: 4px; opacity: .8 }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden }
+.seg button { border: 0; background: transparent; color: var(--ink2); padding: 7px 13px; font: 600 13px var(--f-body); cursor: pointer }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink) }
+.seg button:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px }
+.plan { display: grid; gap: 8px }
+.var { border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; font-size: 13px; display: grid; gap: 2px }
+.var b { font-family: var(--f-mono) }
+.var .diff { color: var(--accent) }
+.acc { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px }
+.acc .opt { grid-template-rows: auto 1fr }
+.kind { font: 600 11px/1 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted) }
 @media (prefers-reduced-motion: reduce) { .opt .media[data-gif] { content-visibility: auto } }
+.toprow { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap }
+.langsw button { padding: 5px 10px; font: 600 12px var(--f-mono) }
 </style>
 
 <div class="wrap">
   <header class="top">
-    <span class="eyebrow" id="eb">deckcraft · бриф</span>
+    <div class="toprow"><span class="eyebrow" id="eb">deckcraft · бриф</span><div class="seg langsw" id="langsw" role="group" aria-label="Язык / Language"></div></div>
     <h1 id="topic"></h1>
     <p class="lead" id="lead"></p>
   </header>
@@ -84,6 +104,11 @@ pre.json { margin: 0; max-height: 200px; overflow: auto; font: 11.5px/1.45 var(-
   <aside aria-label="Выбранное">
     <h3>Ваш выбор</h3>
     <dl id="sum"></dl>
+    <div>
+      <div class="kind" style="margin-bottom:6px">Сколько вариантов презентации собрать</div>
+      <div class="seg" id="nvar" role="group" aria-label="Число вариантов"></div>
+    </div>
+    <div class="plan" id="plan"></div>
     <button class="btn" id="save" type="button">Сохранить выбор</button>
     <button class="btn ghost" id="reset" type="button">Вернуть рекомендацию</button>
     <div class="status" id="status" role="status"></div>
@@ -96,16 +121,60 @@ pre.json { margin: 0; max-height: 200px; overflow: auto; font: 11.5px/1.45 var(-
 </div>
 
 <script>
-const DATA = /*DATA*/null;
+const PACK = /*DATA*/null;  // {lang: основной язык, ru: {...}, en: {...}}
+const UI_EN = /*UI_EN*/{};
+const UI_LANGS = { ru: "RU", en: "EN" };
+let LANG = PACK.lang;
+try { const l = localStorage.getItem("deckcraft:lang"); if (l && PACK[l]) LANG = l; } catch (e) {}
+let DATA = PACK[LANG] || PACK[PACK.lang];
+const T = s => (LANG === "en" && UI_EN[s] !== undefined) ? UI_EN[s] : s;
+// статичный текст страницы: текстовые узлы и подписи; оригиналы (русские) запоминаются — язык можно вернуть
+const ORIG = new WeakMap(), ORIG_ATTR = new WeakMap();
+function i18nDom(root) {
+  document.documentElement.lang = LANG;
+  if (!ORIG.has(document)) ORIG.set(document, document.title);
+  document.title = T(ORIG.get(document));
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = w.nextNode(); n; n = w.nextNode()) {
+    if (!ORIG.has(n)) { const t = n.nodeValue.trim(); if (!t || UI_EN[t] === undefined) continue; ORIG.set(n, n.nodeValue); }
+    const o = ORIG.get(n), t = o.trim();
+    n.nodeValue = LANG === "en" ? o.replace(t, UI_EN[t]) : o;
+  }
+  root.querySelectorAll("[placeholder],[aria-label],[title]").forEach(el => {
+    const saved = ORIG_ATTR.get(el) || {};
+    for (const a of ["placeholder", "aria-label", "title"]) {
+      const v = saved[a] !== undefined ? saved[a] : el.getAttribute(a);
+      if (!v || UI_EN[v] === undefined) continue;
+      saved[a] = v; el.setAttribute(a, LANG === "en" ? UI_EN[v] : v);
+    }
+    ORIG_ATTR.set(el, saved);
+  });
+}
+// переключатель языка в шапке: RU | EN, выбор помнится
+function langSwitch(onChange) {
+  const box = document.getElementById("langsw"); if (!box) return;
+  box.replaceChildren();
+  for (const l of Object.keys(UI_LANGS)) {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = UI_LANGS[l];
+    b.setAttribute("aria-pressed", String(l === LANG)); b.setAttribute("lang", l);
+    b.onclick = () => { if (l === LANG) return; LANG = l; try { localStorage.setItem("deckcraft:lang", l); } catch (e) {}
+      i18nDom(document.body); langSwitch(onChange); onChange(); };
+    box.append(b);
+  }
+}
 
-const rec = DATA.brief;
+
+let rec = DATA.brief;
+const AX = [["palette", "palettes"], ["motif", "motifs"], ["navigation", "navigation"]];
+// Состояние v2: в осях — списки (порядок = приоритет), у разделов — пул языков (первый — ведущий)
 const recState = () => ({
-  palette: rec.palette.key, motif: rec.motif.key, navigation: rec.navigation.key, transition: rec.transition.key,
-  sections: Object.fromEntries(rec.sections.map(s => [s.section, s.motion])), notes: ""
+  palettes: [rec.palette.key], motifs: [rec.motif.key], navigation: [rec.navigation.key],
+  transition: { main: rec.transition.key, accents: [] },
+  sections: Object.fromEntries(rec.sections.map(s => [s.section, [s.motion]])), variants: 1, notes: ""
 });
 let state = recState();
-let draftKey = "deckbrief:" + (DATA.id || rec.topic);
-try { const d = JSON.parse(localStorage.getItem(draftKey) || "null"); if (d) state = { ...state, ...d }; } catch (e) {}
+const draftKey = "deckbrief2:" + (DATA.id || rec.topic);
+try { const d = JSON.parse(localStorage.getItem(draftKey) || "null"); if (d && d.palettes) state = { ...state, ...d }; } catch (e) {}
 
 const $ = (s, el = document) => el.querySelector(s);
 const h = (tag, attrs = {}, kids = []) => {
@@ -117,22 +186,33 @@ const h = (tag, attrs = {}, kids = []) => {
   for (const c of [].concat(kids)) if (c) el.append(c);
   return el;
 };
+const toggle = (list, key, keepOne = true) => {
+  const i = list.indexOf(key);
+  if (i >= 0) { if (!(keepOne && list.length === 1)) list.splice(i, 1); } else list.push(key);
+};
 
-$("#topic").textContent = rec.topic;
-$("#lead").textContent = "Я уже выбрал всё сам — рекомендации отмечены. Поменяйте то, что не нравится, и нажмите «Сохранить выбор». "
-  + "Превью — короткие фрагменты из лаборатории форм; в вашей колоде они будут в выбранной палитре и с вашим текстом.";
-if (rec.minutes) $("#eb").textContent = `deckcraft · бриф · ${rec.minutes} мин` + (rec.audience ? ` · ${rec.audience}` : "");
+function header() {
+  $("#topic").textContent = rec.topic;
+  $("#lead").textContent = T("Я уже выбрал всё сам — рекомендации отмечены. Можно отметить несколько вариантов: цифра на карточке — ")
+    + T("приоритет. Из отмеченного я соберу 1–3 разные презентации и покажу их рядом, а вы выберете лучшую или соберёте её из частей.");
+  $("#eb").textContent = rec.minutes ? `${T("deckcraft · бриф")} · ${rec.minutes} ${T("мин")}` + (rec.audience ? ` · ${rec.audience}` : "")
+    : T("deckcraft · бриф");
+}
+header();
 
-// из причины оставляем только совпадения с темой: описание уже есть на карточке
-const hitsOf = r => r && r.includes("В теме:") ? r.slice(r.indexOf("В теме:")) : "";
+const hitsOf = r => r && r.includes(T("В теме:")) ? r.slice(r.indexOf(T("В теме:"))) : "";
 
-function card(item, field, recKey, recReason) {
+function card(item, list, recKey, recReason, onPick) {
+  const pos = list.indexOf(item.key);
   const isRec = item.key === recKey;
   const media = item.img
-    ? h("img", { class: "media", src: item.img, alt: "Превью: " + item.title, loading: "lazy", "data-gif": item.img.endsWith(".gif") || null })
-    : h("div", { class: "noimg", text: "без превью" });
-  const btn = h("button", { class: "opt", type: "button", "aria-pressed": String(state[field] === item.key), "data-key": item.key,
-    onclick: () => { state[field] = item.key; persist(); render(); } }, [
+    ? h("div", { class: "mwrap" }, [h("img", { class: "media zoomable", src: item.img, alt: T("Превью: ") + item.title, loading: "lazy" }),
+        h("span", { class: "zoom", role: "button", tabindex: "0", title: T("Открыть крупно"), "aria-label": T("Открыть крупно: ") + item.title, text: "⤢",
+          onclick: e => { e.stopPropagation(); openLightbox(e.target.parentNode.querySelector("img")); },
+          onkeydown: e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); openLightbox(e.target.parentNode.querySelector("img")); } } })])
+    : h("div", { class: "noimg", text: T("смотреть в PowerPoint") });
+  const btn = h("button", { class: "opt", type: "button", "aria-pressed": String(pos >= 0), "data-key": item.key,
+    onclick: () => { onPick(item.key); persist(); render(); } }, [
     media,
     h("div", { class: "body" }, [
       h("span", { class: "name", text: item.title }),
@@ -140,111 +220,230 @@ function card(item, field, recKey, recReason) {
       isRec && hitsOf(recReason) ? h("span", { class: "reason", text: hitsOf(recReason) }) : null
     ])
   ]);
-  if (isRec) btn.append(h("span", { class: "badge", text: "РЕКОМЕНДУЮ" }));
+  if (isRec) btn.append(h("span", { class: "badge", text: T("РЕКОМЕНДУЮ") }));
+  if (pos >= 0 && list.length > 1) btn.append(h("span", { class: "num", text: String(pos + 1), title: T("приоритет") }));
   return btn;
 }
 
-function group(id, title, hint, items, field, recKey, recReason) {
+function group(id, title, hint, items, list, recKey, recReason) {
   return h("section", { id }, [h("h2", { text: title }), h("p", { class: "hint", text: hint }),
-    h("div", { class: "grid" }, items.map(it => card(it, field, recKey, recReason)))]);
+    h("div", { class: "grid" }, items.map(it => card(it, list, recKey, recReason, k => toggle(list, k))))]);
 }
 
 function render() {
   const main = $("#main"); const y = window.scrollY; main.replaceChildren();
-  main.append(group("pal", "Палитра", "Цвет держит всю колоду: фон, текст, один главный акцент. Карточка показывает, как увидит зритель.",
-    DATA.palettes, "palette", rec.palette.key, rec.palette.reason));
-  main.append(group("motif", "Сквозной мотив", "Один образ от темы живёт всю колоду в разных ролях: обложка, указатель, фон, диаграмма, финал.",
-    DATA.motifs, "motif", rec.motif.key, rec.motif.reason));
-  main.append(group("nav", "Навигация", "Одна система на колоду: по ней зритель понимает, где он сейчас.",
-    DATA.navigation, "navigation", rec.navigation.key, ""));
-  main.append(group("trans", "Переход между разделами", "Один тип на колоду — как знак препинания между частями доклада.",
-    DATA.transitions, "transition", rec.transition.key, ""));
+  main.append(group("pal", T("Палитра"), T("Можно отметить 2–3 — каждая презентация-вариант будет в своей палитре."),
+    DATA.palettes, state.palettes, rec.palette.key, rec.palette.reason));
+  main.append(group("motif", T("Сквозной мотив"), T("Один образ живёт всю презентацию в разных ролях. Отметьте несколько — сравним в вариантах."),
+    DATA.motifs, state.motifs, rec.motif.key, rec.motif.reason));
+  main.append(group("nav", T("Навигация"), T("Внутри презентации — одна система. Несколько отмеченных — разные варианты презентации."),
+    DATA.navigation, state.navigation, rec.navigation.key, ""));
+
+  // переход между разделами: основной — один; акценты — сколько угодно, ставятся по смыслу
+  main.append(h("section", { id: "trans" }, [
+    h("h2", { text: T("Переход между разделами") }),
+    h("p", { class: "hint", text: T("Основной — один на презентацию, как знак препинания.") }),
+    h("div", { class: "grid" }, DATA.transitions.map(it => card(it, [state.transition.main], rec.transition.key, "",
+      k => { state.transition.main = k; })))
+  ]));
+  const det = h("details", { id: "accents-wrap" });
+  det.open = state.transition.accents.length > 0;
+  det.append(h("summary", { class: "mono", text: T("Дополнительно: нативные переходы PowerPoint (куб, наезд…) — обычно не нужны") }));
+  det.append(h("section", { id: "accents" }, [
+    h("h2", { text: T("Смена раздела: нативный переход") }),
+    h("p", { class: "hint", text: T("Осторожно: такие переходы часто удешевляют презентацию — основной упор на трансформацию (Morph). ")
+      + T("По умолчанию не используются.") }),
+    h("p", { class: "hint", text: T("Необязательно. Выбранный переход PowerPoint встанет на ВСЕ границы разделов — как система, ")
+      + T("а не разовая вставка. Отметите несколько — каждый вариант презентации попробует свой. «Финал» (занавес, оригами) — ")
+      + T("только на последнюю границу, вместе с основным.") }),
+    h("div", { class: "acc" }, DATA.accents.map(a => {
+      const list = state.transition.accents, pos = list.indexOf(a.key);
+      const b = h("button", { class: "opt", type: "button", "aria-pressed": String(pos >= 0),
+        onclick: () => { toggle(list, a.key, false); persist(); render(); } },
+        [a.img ? h("img", { class: "media zoomable", src: a.img, alt: T("Превью (приближённое): ") + a.title, loading: "lazy" }) : null,
+         h("div", { class: "body" }, [h("span", { class: "kind", text: a.kind_title }), h("span", { class: "name", text: a.title }),
+          h("span", { class: "why", text: a.why })])]);
+      if (pos >= 0 && list.length > 1) b.append(h("span", { class: "num", text: String(pos + 1) }));
+      return b;
+    }))
+  ]));
+  main.append(det);
 
   const recMap = Object.fromEntries(rec.sections.map(s => [s.section, s]));
   main.append(h("section", { id: "langs" }, [
-    h("h2", { text: "Язык движения по разделам" }),
-    h("p", { class: "hint", text: "Внутри раздела язык повторяется, у соседних разделов он разный. ★ — моя рекомендация." }),
-    h("div", { class: "rows" }, rec.sections.map(s => h("div", { class: "row" }, [
-      h("div", { class: "sec" }, [document.createTextNode(s.section), h("small", { text: recMap[s.section].reason })]),
-      h("div", { class: "chips" }, DATA.motion.map(m => h("button", {
-        class: "chip" + (m.key === s.motion ? " rec" : ""), type: "button", title: m.why,
-        "aria-pressed": String(state.sections[s.section] === m.key),
-        onclick: () => { state.sections[s.section] = m.key; persist(); render(); } }, [document.createTextNode(m.title)])))
-    ])))
+    h("h2", { text: T("Язык движения по разделам") }),
+    h("p", { class: "hint", text: T("Отметьте 1–3 языка на раздел. Первый — ведущий, остальные — вставками внутри раздела; ")
+      + T("в вариантах презентации ведущим по очереди становится следующий. ★ — моя рекомендация.") }),
+    h("div", { class: "rows" }, rec.sections.map(s => {
+      const pool = state.sections[s.section] || (state.sections[s.section] = [s.motion]);
+      const byKey = Object.fromEntries(DATA.motion.map(m => [m.key, m]));
+      const lead = byKey[pool[0]] || DATA.motion[0];
+      const img = h("img", { class: "zoomable", src: lead.img || "", alt: T("Превью: ") + lead.title, loading: "lazy" });
+      const cap = h("span", { class: "cap", text: lead.title });
+      const show = m => { if (m && m.img) { img.src = m.img; img.alt = T("Превью: ") + m.title; cap.textContent = m.title; } };
+      return h("div", { class: "row" }, [
+        h("div", { class: "sec" }, [document.createTextNode(s.section), h("small", { text: recMap[s.section].reason })]),
+        h("div", { class: "pv", title: T("Как выглядит ведущий язык; наведите на вариант справа, чтобы посмотреть его") }, [img, cap]),
+        h("div", { class: "chips" }, DATA.motion.map(m => {
+          const pos = pool.indexOf(m.key);
+          return h("button", { class: "chip" + (m.key === s.motion ? " rec" : ""), type: "button", title: m.why,
+            "aria-pressed": String(pos >= 0), onclick: () => { toggle(pool, m.key); persist(); render(); },
+            onmouseenter: () => show(m), onfocus: () => show(m), onmouseleave: () => show(lead), onblur: () => show(lead) },
+            [document.createTextNode(m.title), pos === 0 && pool.length > 1 ? h("span", { class: "lead-mark", text: T("ведущий") })
+              : (pos > 0 ? h("span", { class: "lead-mark", text: String(pos + 1) }) : null)]);
+        }))
+      ]);
+    }))
   ]));
-  main.append(group("motion", "Как выглядят языки движения", "Справка к строкам выше. Нажатие выбирает язык для всех разделов сразу.",
-    DATA.motion, "_all", "", ""));
-  main.querySelectorAll("#motion .opt").forEach(b => {
-    b.setAttribute("aria-pressed", "false");
-    b.onclick = () => { for (const s of rec.sections) state.sections[s.section] = b.dataset.key; persist(); render(); };
-  });
 
-  const ta = h("textarea", { id: "notes", placeholder: "Например: меньше текста на слайдах, больше 3D, мотив — не бокал, а бочка…",
-    oninput: e => { state.notes = e.target.value; persist(false); summary(); } });
+  const ta = h("textarea", { id: "notes", placeholder: T("Например: меньше текста на слайдах, больше 3D, мотив — не бокал, а бочка…"),
+    oninput: e => { state.notes = e.target.value; persist(); summary(); } });
   ta.value = state.notes || "";
-  main.append(h("section", { id: "wish" }, [h("h2", { text: "Пожелания" }),
-    h("p", { class: "hint", text: "Что важно, чего избегать, что понравилось в прошлых колодах." }), ta]));
+  main.append(h("section", { id: "wish" }, [h("h2", { text: T("Пожелания") }),
+    h("p", { class: "hint", text: T("Что важно, чего избегать, что понравилось в прошлых презентациях.") }), ta]));
   window.scrollTo(0, y);
   summary();
 }
 
 const titleOf = (list, key) => (list.find(x => x.key === key) || {}).title || key;
-function payload() {
-  return { topic: rec.topic, palette: state.palette, motif: state.motif, navigation: state.navigation, transition: state.transition,
-    sections: rec.sections.map(s => ({ section: s.section, motion: state.sections[s.section] })), notes: state.notes || "",
-    changed: changedFields() };
+const titles = (list, keys) => keys.map(k => titleOf(list, k)).join(", ");
+
+// тот же алгоритм, что morphkit.combine.plan_variants: максимально непохожие комбинации
+function planVariants() {
+  const lists = { palette: state.palettes, motif: state.motifs, navigation: state.navigation };
+  const combos = [];
+  for (const p of lists.palette) for (const m of lists.motif) for (const n of lists.navigation) combos.push({ palette: p, motif: m, navigation: n });
+  const better = (a, b) => { for (let j = 0; j < a.length; j++) if (a[j] !== b[j]) return a[j] > b[j]; return false; };
+  const dist = (a, b) => AX.reduce((s, [k]) => s + (a[k] !== b[k]), 0);
+  const picked = [combos[0]];
+  while (picked.length < Math.min(state.variants, combos.length)) {
+    const used = new Set(picked.flatMap(p => AX.map(([k]) => k + ":" + p[k])));
+    let best = null, bk = null;
+    combos.forEach((c, i) => {
+      if (picked.includes(c)) return;
+      const key = [Math.min(...picked.map(p => dist(c, p))), picked.reduce((s, p) => s + dist(c, p), 0),
+        AX.filter(([k]) => !used.has(k + ":" + c[k])).length, -i];
+      if (!bk || better(key, bk)) { best = c; bk = key; }
+    });
+    picked.push(best);
+  }
+  while (picked.length < state.variants) picked.push({ ...picked[0], motionOnly: true });
+  return picked;
 }
-function changedFields() {
-  const r = recState(), out = [];
-  for (const k of ["palette", "motif", "navigation", "transition"]) if (state[k] !== r[k]) out.push(k);
-  for (const s of rec.sections) if (state.sections[s.section] !== r.sections[s.section]) out.push("section:" + s.section);
-  return out;
-}
+
 function summary() {
   const sum = $("#sum"); sum.replaceChildren();
   const add = (k, v) => sum.append(h("dt", { text: k }), h("dd", { text: v }));
-  add("Палитра", titleOf(DATA.palettes, state.palette));
-  add("Мотив", titleOf(DATA.motifs, state.motif));
-  add("Навигация", titleOf(DATA.navigation, state.navigation));
-  add("Переход", titleOf(DATA.transitions, state.transition));
-  rec.sections.forEach((s, i) => add(String(i + 1).padStart(2, "0"), titleOf(DATA.motion, state.sections[s.section])));
-  const n = changedFields().length;
-  add("Изменено", n ? `${n} из ${4 + rec.sections.length}` : "ничего — всё по рекомендации");
+  add(T("Палитры"), titles(DATA.palettes, state.palettes));
+  add(T("Мотивы"), titles(DATA.motifs, state.motifs));
+  add(T("Навигация"), titles(DATA.navigation, state.navigation));
+  add(T("Переход"), titleOf(DATA.transitions, state.transition.main)
+    + (state.transition.accents.length ? " + " + titles(DATA.accents, state.transition.accents) : ""));
+  rec.sections.forEach((s, i) => add(String(i + 1).padStart(2, "0"), titles(DATA.motion, state.sections[s.section] || [])));
+
+  const nv = $("#nvar"); nv.replaceChildren();
+  [1, 2, 3].forEach(n => nv.append(h("button", { type: "button", "aria-pressed": String(state.variants === n), text: String(n),
+    onclick: () => { state.variants = n; persist(); summary(); } })));
+  const plan = $("#plan"); plan.replaceChildren();
+  const vars = state.variants > 1 ? planVariants() : [];
+  vars.forEach((v, i) => {
+    const base = vars[0];
+    const diff = i === 0 ? T("главный выбор") : v.motionOnly ? T("другой ведущий язык движения")
+      : T("иначе: ") + AX.filter(([k]) => v[k] !== base[k]).map(([k]) => ({ palette: T("палитра"), motif: T("мотив"), navigation: T("навигация") })[k]).join(", ");
+    plan.append(h("div", { class: "var" }, [h("b", { text: "ABC"[i] }),
+      h("span", { text: `${titleOf(DATA.palettes, v.palette)} · ${titleOf(DATA.motifs, v.motif)} · ${titleOf(DATA.navigation, v.navigation)}` }),
+      h("span", { class: "diff", text: diff })]));
+  });
   $("#json").textContent = JSON.stringify(payload(), null, 1);
 }
-function persist(redraw = true) { try { localStorage.setItem(draftKey, JSON.stringify(state)); } catch (e) {} }
+
+function payload() {
+  return { schema: 2, topic: rec.topic, palettes: state.palettes, motifs: state.motifs, navigation: state.navigation,
+    transition: state.transition, sections: Object.fromEntries(rec.sections.map(s => [s.section, state.sections[s.section]])),
+    variants: state.variants, notes: state.notes || "" };
+}
+function persist() { try { localStorage.setItem(draftKey, JSON.stringify(state)); } catch (e) {} }
 
 const status = (t, err) => { const s = $("#status"); s.textContent = t; s.classList.toggle("err", !!err); };
 let db = null;
 $("#save").onclick = async () => {
-  if (!db) { status("Сохранение здесь недоступно. Раскройте «Выбор текстом» ниже и вставьте его в чат.", true); return; }
-  $("#save").disabled = true; status("Сохраняю…");
+  if (!db) { status(T("Сохранение здесь недоступно. Раскройте «Выбор текстом» ниже и вставьте его в чат."), true); return; }
+  $("#save").disabled = true; status(T("Сохраняю…"));
   try {
     await db.doc("brief/choice").set({ ...payload(), savedAt: new Date().toISOString() });
-    status("Сохранено. Напишите в чат «готово» — я прочитаю выбор и соберу раскадровку.");
+    status(state.variants > 1 ? T("Сохранено. Напишите в чат «готово» — я соберу {n} варианта и покажу их рядом.").replace("{n}", state.variants)
+      : T("Сохранено. Напишите в чат «готово» — я прочитаю выбор и соберу раскадровку."));
   } catch (e) {
-    status("Не сохранилось" + (e && e.code ? ` (${e.code})` : "") + ". Скопируйте выбор текстом ниже и вставьте в чат.", true);
+    status(T("Не сохранилось") + (e && e.code ? ` (${e.code})` : "") + T(". Скопируйте выбор текстом ниже и вставьте в чат."), true);
   } finally { $("#save").disabled = false; }
 };
-$("#reset").onclick = () => { state = recState(); persist(); render(); status("Вернул рекомендацию."); };
+$("#reset").onclick = () => { state = recState(); persist(); render(); status(T("Вернул рекомендацию.")); };
 $("#copy").onclick = async () => {
   const t = $("#json").textContent;
-  try { await navigator.clipboard.writeText(t); status("Скопировано."); }
-  catch (e) { const r = document.createRange(); r.selectNodeContents($("#json")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); status("Выделил текст — скопируйте вручную."); }
+  try { await navigator.clipboard.writeText(t); status(T("Скопировано.")); }
+  catch (e) { const r = document.createRange(); r.selectNodeContents($("#json")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); status(T("Выделил текст — скопируйте вручную.")); }
 };
 
+const onLang = () => { DATA = PACK[LANG] || DATA; rec = DATA.brief; header(); render(); };
+i18nDom(document.body);
+langSwitch(onLang);
+document.addEventListener("DOMContentLoaded", () => i18nDom(document.body));
 render();
 (async () => {
   try {
     db = window.claude && window.claude.use ? await window.claude.use("db") : null;
-    if (!db) { status("Сохранение недоступно в этом окне — выбор можно скопировать текстом."); return; }
+    if (!db) { status(T("Сохранение недоступно в этом окне — выбор можно скопировать текстом.")); return; }
     const snap = await db.doc("brief/choice").get();
     const saved = snap && snap.exists ? snap.data() : null;
-    if (saved && saved.palette) {
-      state.palette = saved.palette; state.motif = saved.motif; state.navigation = saved.navigation; state.transition = saved.transition;
-      for (const s of saved.sections || []) if (s.section in state.sections) state.sections[s.section] = s.motion;
-      state.notes = saved.notes || ""; render(); status("Загружен сохранённый выбор.");
+    if (saved && saved.schema === 2) {
+      state = { ...state, palettes: [...saved.palettes], motifs: [...saved.motifs], navigation: [...saved.navigation],
+        transition: { main: saved.transition.main, accents: [...(saved.transition.accents || [])] },
+        sections: { ...state.sections, ...JSON.parse(JSON.stringify(saved.sections || {})) },
+        variants: saved.variants || 1, notes: saved.notes || "" };
+      render(); status(T("Загружен сохранённый выбор."));
+    } else if (saved && saved.palette) {  // выбор из версии 0.1: по одному пункту — переносим в списки
+      state.palettes = [saved.palette]; state.motifs = [saved.motif]; state.navigation = [saved.navigation];
+      state.transition = { main: saved.transition, accents: [] };
+      for (const s of saved.sections || []) if (s.section in state.sections) state.sections[s.section] = [s.motion];
+      state.notes = saved.notes || ""; render(); status(T("Загружен ваш прошлый выбор — теперь можно отметить по несколько вариантов."));
     }
   } catch (e) { /* чтение без доступа — работаем локально */ }
+})();
+</script>
+<style>
+.lb { position: fixed; inset: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(6px);
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 14px) }
+.lb[hidden] { display: none }
+.lb .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--ink); font: 600 14px var(--f-body) }
+.lb .stage { display: grid; place-items: center; min-height: 0 }
+.lb .stage img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; border: 1px solid var(--line); background: var(--surface) }
+.lb .nav { display: flex; justify-content: center; gap: 10px }
+.lb button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 9px; padding: 9px 14px; font: 600 14px var(--f-body); cursor: pointer }
+.lb button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
+img.zoomable { cursor: zoom-in }
+.zoom { position: absolute; bottom: 8px; right: 8px; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--ink); display: grid; place-items: center; font: 600 15px/1 var(--f-body); cursor: zoom-in }
+.opt .mwrap { position: relative }
+</style>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Просмотр картинки">
+  <div class="bar"><span id="lbcap"></span><button type="button" id="lbx" aria-label="Закрыть">Закрыть · Esc</button></div>
+  <div class="stage"><img id="lbimg" alt=""></div>
+  <div class="nav"><button type="button" id="lbp" aria-label="Предыдущая">← Назад</button><span id="lbn" class="mono"></span><button type="button" id="lbnx" aria-label="Следующая">Дальше →</button></div>
+</div>
+<script>
+// Просмотрщик: любая img.zoomable открывается крупно; стрелки листают все такие картинки страницы, Esc закрывает
+(() => {
+  const lb = document.getElementById("lb"), im = document.getElementById("lbimg"), cap = document.getElementById("lbcap"), num = document.getElementById("lbn");
+  let list = [], i = 0, back = null;
+  const show = () => { const el = list[i]; im.src = el.currentSrc || el.src; im.alt = el.alt; cap.textContent = el.alt || ""; num.textContent = `${i + 1} / ${list.length}`; };
+  window.openLightbox = el => { list = [...document.querySelectorAll("img.zoomable")]; i = Math.max(0, list.indexOf(el)); back = document.activeElement; show(); lb.hidden = false; document.getElementById("lbx").focus(); };
+  const close = () => { lb.hidden = true; im.removeAttribute("src"); if (back) back.focus(); };
+  const step = d => { i = (i + d + list.length) % list.length; show(); };
+  document.getElementById("lbx").onclick = close;
+  document.getElementById("lbp").onclick = () => step(-1);
+  document.getElementById("lbnx").onclick = () => step(1);
+  lb.addEventListener("click", e => { if (e.target === lb || e.target.classList.contains("stage")) close(); });
+  document.addEventListener("keydown", e => { if (lb.hidden) return; if (e.key === "Escape") close(); if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
+  document.addEventListener("click", e => { const t = e.target.closest("img.zoomable"); if (t && !t.closest(".opt")) { e.preventDefault(); openLightbox(t); } });
 })();
 </script>

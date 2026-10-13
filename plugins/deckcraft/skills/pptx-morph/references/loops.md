@@ -1,68 +1,70 @@
-# Петли и обычные анимации поверх Morph
+# Loops and ordinary animations on top of Morph
 
-## Где что живёт
+## What lives where
 
-| Слой | Чем задаётся | Когда работает |
+| Layer | Defined by | When it works |
 |---|---|---|
-| Переход Morph | `p:transition` (раздел 11 SKILL.md) | между слайдами: пары `!!` перетекают, остальное проявляется/гаснет |
-| Появление после перехода | `anim_*` → эффект `appear` | один раз, по очереди, после перехода |
-| Петли | `Slide(loops=[Loop(...)])` → эффекты с `repeatCount="indefinite"` | непрерывно, пока слайд на экране |
+| Morph transition | `p:transition` (section 11 of SKILL.md) | between slides: `!!` pairs flow into each other, the rest fades in/out |
+| Appearance after the transition | `anim_*` → `appear` effect | once, in turn, after the transition |
+| Loops | `Slide(loops=[Loop(...)])` → effects with `repeatCount="indefinite"` | continuously, while the slide is on screen |
 
-Все эффекты слайда — на одной шкале: `tmRoot` → `mainSeq` → одна группа «с предыдущим» от начала слайда (`delay="indefinite"` + `evt="onBegin"`) → эффекты `nodeType="withEffect"` со своими задержками. Щелчков не нужно.
+All effects of a slide are on one timeline: `tmRoot` → `mainSeq` → one "with previous" group from the start of the slide (`delay="indefinite"` + `evt="onBegin"`) → `nodeType="withEffect"` effects with their own delays. No clicks are needed.
 
-## Пять петель
+## Five loops
 
-### flow — поток точек по пути
+### flow — a stream of dots along a path
 ```python
 nodes_a, nodes_b = k.node("srv", ...), k.node("cli", ...)
-wire, path = k.link("wire", nodes_a[0], nodes_b[0])      # стрелка от края к краю + путь от центра к центру
+wire, path = k.link("wire", nodes_a[0], nodes_b[0])      # arrow from edge to edge + path from center to center
 Slide(objs + wire, loops=[k.flow(path, n=3, period=2.4)])
 ```
-Путь может быть ломаной (`points=[(x1,y1),(x2,y2),(x3,y3)]`), координаты в дюймах слайда. В XML каждая точка — овал `loop_…_dotI` с эффектом:
+The path can be a polyline (`points=[(x1,y1),(x2,y2),(x3,y3)]`), coordinates in slide inches. In XML each dot is an oval `loop_…_dotI` with the effect:
 ```xml
 <p:cTn presetID="0" presetClass="path" presetSubtype="0" repeatCount="indefinite" fill="hold" nodeType="withEffect">
-  <p:stCondLst><p:cond delay="{старт + i·period/n}"/></p:stCondLst>
+  <p:stCondLst><p:cond delay="{start + i·period/n}"/></p:stCondLst>
   <p:childTnLst><p:animMotion origin="layout" path="M 0 0 L 0.56250 0.00000 E" pathEditMode="relative" ptsTypes="">
     <p:cBhvr><p:cTn dur="{period}" fill="hold"/><p:tgtEl><p:spTgt spid="…"/></p:tgtEl>
       <p:attrNameLst><p:attrName>ppt_x</p:attrName><p:attrName>ppt_y</p:attrName></p:attrNameLst></p:cBhvr>
   </p:animMotion></p:childTnLst></p:cTn>
 ```
-Путь задаётся **в долях размера слайда** относительно начальной точки (`motion_path()`): `L dx/13.333 dy/7.5`. Скорость постоянная, ускорения нет (без `accel/decel`).
-Хитрость с очередью: точки ждут своей задержки в начале пути. Если путь начинается в центре узла-источника, а точки лежат ниже узла (`z` 5 < 10), ожидание и возврат на старт не видны.
-В интерфейсе PowerPoint то же самое: «Пути перемещения → Линии», «Параметры эффектов → Повторение: до окончания слайда».
+The path is defined **in fractions of the slide size** relative to the start point (`motion_path()`): `L dx/13.333 dy/7.5`. The speed is constant, no acceleration (no `accel/decel`).
+The queue trick: the dots wait for their delay at the start of the path. If the path starts at the center of the source node and the dots lie below the node (`z` 5 < 10), the waiting and the return to the start are not visible.
+In the PowerPoint interface it is the same thing: "Motion Paths → Lines", "Effect Options → Repeat: Until End of Slide".
 
-### pulse — узел «дышит»
-emph 6 «Увеличение/уменьшение»: `animScale by x=y=scale·100000`, `autoRev="1"`, повтор. `period` — полный цикл туда-обратно. Масштаб 1,04–1,10 для узлов, до 1,2 для маленьких маркеров.
+### pulse — a node "breathes"
+emph 6 "Grow/Shrink": `animScale by x=y=scale·100000`, `autoRev="1"`, repeat. `period` — a full there-and-back cycle. Scale 1.04–1.10 for nodes, up to 1.2 for small markers.
 
-### ripple — круги на воде
-Движок создаёт кольцо-копию вокруг цели (`loop_…_ring`, без заливки) и вешает в одном узле `animScale` (рост до `scale`) и `animEffect transition="out" filter="fade"`. Каждый цикл начинается с исходного размера. Хорошо для «событие произошло здесь», «замок закрыт», «сигнал».
+### ripple — ripples on water
+The engine creates a copy ring around the target (`loop_…_ring`, no fill) and puts in one node `animScale` (growth to `scale`) and `animEffect transition="out" filter="fade"`. Each cycle starts from the original size. Good for "the event happened here", "the lock is closed", "a signal".
 
-### spin — вращение
-emph 8 «Вращение»: `animRot by="21600000"` (360° в 60000-х долях градуса) с повтором. Для «обучение идёт», «обработка». Вращай симметричные фигуры (шестиугольник, кольцо с разрывом), не текст.
+### spin — rotation
+emph 8 "Spin": `animRot by="21600000"` (360° in 60000ths of a degree) with repeat. For "training is in progress", "processing". Rotate symmetric shapes (a hexagon, a ring with a gap), not text.
 
-### blink — мигание
-emph 35 «Мерцание»: дискретная анимация `style.visibility` hidden → visible на середине цикла. Для курсора терминала (`Kit.terminal` возвращает имя курсора) и индикаторов ожидания. Период 0,9–1,2 с.
+### blink — blinking
+emph 35 "Blink": a discrete animation of `style.visibility` hidden → visible at the middle of the cycle. For a terminal cursor (`Kit.terminal` returns the cursor name) and waiting indicators. Period 0.9–1.2 s.
 
-## Совмещение с Morph
+## Combining with Morph
 
-1. **Объект петли не бывает парой Morph.** Путь перемещения и масштаб меняют отрисовку, а Morph берёт статические координаты — получился бы рывок. `resolve()` запрещает `!!` у `loop_…`. Пульс и вращение вешаются на `!!`-узел допустимо (они возвращаются в исходное состояние), но тогда переход начнётся с того кадра, где эффект оборвался. Если важно, ставь пульс на отдельное кольцо-подложку без пары.
-2. **Схема морфится, поток пересоздаётся.** На каждом слайде петли описываются заново под новые координаты. Старые точки гаснут во время перехода, новые стартуют после него.
-3. **Порядок:** переход → шкала слайда (стартует после окончания перехода — подтверждено записью показа) → петли через 150 мс + `start`, `anim_*` через 150 + i·380 мс. Прибавлять длительность Morph к задержкам нельзя: петля стартует с видимой паузой.
-3а. **Носители скрыты до старта.** Перед циклом каждая точка `flow` и кольцо `ripple` получают вход «Появление» (presetID 1, entr) с той же задержкой. До старта объект невидим, в том числе во время Morph: очередь точек под узлом не мелькает при переходе.
-3б. **Выделение шага — рамкой.** Не перекрашивай узел Morph-ом между далёкими цветами (оранжевый → синий даёт коричневый): `Kit.marker(узел)` — пара `!!marker`, переезжает к новому узлу.
-4. **Ритм:** периоды разных петель на слайде — не кратные друг другу (2,2 и 1,6 с), чтобы не было механического «марша». Точки одной петли идут равномерно (сдвиг period/n).
-5. **Мера:** ≤ 2 систем петель на слайде (петли с общим префиксом имени до «_» — `sig_a`, `sig_b` — одна система: например, сигнал от одного источника по трём рёбрам); в разделе — не на каждом слайде. Петля объясняет процесс (что течёт, что работает, что ждёт), а не украшает.
-6. **Цвет:** точки потока — роль `flow` (обычно акцент), размер 0,10–0,16″; на тёмном фоне можно ярче, на светлом — насыщенный тёмный.
+1. **A loop object is never a Morph pair.** A motion path and scale change the rendering, while Morph takes static coordinates — there would be a jerk. `resolve()` forbids `!!` on `loop_…`. Putting pulse and spin on a `!!` node is allowed (they return to the original state), but then the transition starts from the frame where the effect was cut off. If it matters, put the pulse on a separate underlay ring without a pair.
+2. **The diagram morphs, the stream is recreated.** On each slide the loops are described anew for the new coordinates. The old dots fade out during the transition, the new ones start after it.
+3. **Order:** transition → slide timeline (starts after the transition ends — confirmed by a slide show recording) → loops after 150 ms + `start`, `anim_*` after 150 + i·380 ms. Do not add the Morph duration to the delays: the loop would start with a visible pause.
+3a. **Carriers are hidden until the start.** Before the cycle, each `flow` dot and `ripple` ring gets the "Appear" entrance (presetID 1, entr) with the same delay. Until the start the object is invisible, including during Morph: the queue of dots under the node does not flicker during the transition.
+3b. **Highlight a step with a frame.** Do not recolor a node via Morph between distant colors (orange → blue gives brown): `Kit.marker(node)` — a `!!marker` pair that moves to the new node.
+4. **Rhythm:** the periods of different loops on a slide are not multiples of each other (2.2 and 1.6 s), so there is no mechanical "march". The dots of one loop go evenly (offset period/n).
+5. **Measure:** ≤ 2 loop systems per slide (loops with a common name prefix up to "_" — `sig_a`, `sig_b` — are one system: for example, a signal from one source along three edges); within a section — not on every slide. A loop explains a process (what flows, what works, what waits), it does not decorate.
+6. **Color:** stream dots — the `flow` role (usually the accent), size 0.10–0.16″; on a dark background they can be brighter, on a light one — a saturated dark.
 
-## Обычные анимации без петель
+## Ordinary animations without loops
 
-Через тот же механизм делаются разовые эффекты: `anim_*` — появление (fade + подъём). Порядок задаётся `Slide(anims=[…])`. Любой другой эффект PowerPoint (198 штук) — `Slide(fx=[Fx(…)])`, см. `motion-library.md`. Для выкладки по щелчку нужна отдельная `par` с `delay="indefinite"` на каждый щелчок (в движке не включено по умолчанию: колоды ведутся переходами).
+One-off effects are made with the same mechanism: `anim_*` — appearance (fade + rise). The order is set by `Slide(anims=[…])`. Any other PowerPoint effect (198 of them) — `Slide(fx=[Fx(…)])`, see `motion-library.md`. On-click build requires a separate `par` with `delay="indefinite"` for each click (not enabled in the engine by default: presentations are driven by transitions).
 
-## Проверка без PowerPoint
+## QA without PowerPoint
 
-1. `xsd_check(pptx)` — 0 ошибок (эффекты валидны по схеме PresentationML).
-2. Импорт в LibreOffice: `soffice.py --headless --convert-to odp deck.pptx`, затем в `content.xml`:
-   - `smil:repeatCount="indefinite"` — по одному на каждую петлю;
-   - `presentation:preset-id="ooo-emphasis-spin"` / `-blink` / `-grow-and-shrink` — пресеты распознаны;
-   - `anim:animateMotion … svg:path="M 0 0 L …"` — пути потока.
-3. Само движение — только в PowerPoint 365/2019+ (F5): LibreOffice не проигрывает Morph.
+1. `xsd_check(pptx)` — 0 errors (the effects are valid against the PresentationML schema).
+2. Import into LibreOffice: `soffice.py --headless --convert-to odp deck.pptx`, then in `content.xml`:
+   - `smil:repeatCount="indefinite"` — one for each loop;
+   - `presentation:preset-id="ooo-emphasis-spin"` / `-blink` / `-grow-and-shrink` — the presets are recognized;
+   - `anim:animateMotion … svg:path="M 0 0 L …"` — the stream paths.
+3. The motion itself — only in PowerPoint 365/2019+ (F5): LibreOffice does not play Morph.
+
+_Russian original: loops.ru.md_

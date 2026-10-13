@@ -38,8 +38,8 @@ claude plugin install document-skills@anthropic-agent-skills
 |---|---|
 | `/deck-brief [тема или файл]` | Разбирает материал на разделы, задаёт короткий опрос и предлагает палитру, сквозной мотив, навигацию, переход между разделами и язык движения каждого раздела — каждое решение с причиной. «Доверить» — решает сам и показывает раскадровку; «настроить» — публикует страницу-витрину с GIF, где вы меняете выбор. |
 | `/deck-build [brief.json]` | Собирает .pptx движком morphkit и проверяет: текст, контраст, пролёт фигур по тексту, XSD, эффекты в LibreOffice, миниатюры, GIF ключевых переходов. |
-| `/deck-remix [pptx] [что поменять]` | Дорабатывает вашу готовую колоду, сохраняя удачное: скорость переходов, разрыв перелива текста, сигнал по линиям, связи графа без пересечений. |
-| `/deck-review [pptx]` | Разбор как у дизайнера: таблица «серьёзность → слайд → правка» и эскиз движения каждого перехода, в том числе для чужих колод. |
+| `/deck-remix [pptx] [что поменять]` | Дорабатывает вашу готовую презентацию, сохраняя удачное: скорость переходов, разрыв перелива текста, сигнал по линиям, связи графа без пересечений. |
+| `/deck-review [pptx]` | Разбор как у дизайнера: таблица «серьёзность → слайд → правка» и эскиз движения каждого перехода, в том числе для чужих презентаций. |
 
 В имени команды может понадобиться префикс плагина: `/deckcraft:deck-brief`.
 
@@ -49,21 +49,26 @@ claude plugin install document-skills@anthropic-agent-skills
 - **Сквозной мотив в ролях** (обложка, указатель у края, фон, диаграмма, финал) и **грамматика процесса**
   (носитель проходит через глаголы: разделить, закодировать, связать, оценить, отметить).
 - **12 палитр** с причиной выбора, **лаборатория форм** (~300 вариантов движения в 25 семействах).
-- Скилл **pptx-design**: композиция слайда, ритм колоды, структура (одна навигация, один тип перехода между
+- Скилл **pptx-design**: композиция слайда, ритм презентации, структура (одна навигация, один тип перехода между
   разделами, свой язык движения у раздела).
 
 ### Пример
-`plugins/deckcraft/skills/pptx-morph/scripts/examples/demo_deck.py` — колода «Как нейросеть находит опечатку»
-с нуля по брифу (16 слайдов, одна фраза проходит через всю колоду). Раскадровка — `demo_storyboard.md` рядом.
+`plugins/deckcraft/skills/pptx-morph/scripts/examples/demo_deck.py` — презентация «Как нейросеть находит опечатку»
+с нуля по брифу (16 слайдов, одна фраза проходит через всю презентацию). Раскадровка — `demo_storyboard.md` рядом.
 
 <p align="center">
 <img src="docs/media/attention.gif" width="420" alt="Дуги внимания, ошибка найдена">
 <img src="docs/media/fix.gif" width="420" alt="Softmax выбирает исправление">
 </p>
-<p align="center"><img src="docs/media/demo_sheet.png" width="860" alt="Миниатюры демо-колоды"></p>
+<p align="center"><img src="docs/media/demo_sheet.png" width="860" alt="Миниатюры демо-презентации"></p>
 
-Страница опроса `/deck-brief` (режим «настроить»):
+Страница опроса `/deck-brief` (режим «настроить»): можно отметить несколько вариантов, у каждого пункта — GIF-превью,
+в углу — переключатель RU/EN.
 <p align="center"><img src="docs/media/brief_page.png" width="760" alt="Страница-витрина брифа"></p>
+
+После сборки вариантов — страница сравнения: одни и те же моменты презентации столбцами, выбор лучшего целиком или
+сборка итога из частей.
+<p align="center"><img src="docs/media/compare_page.png" width="760" alt="Сравнение вариантов A, B, C"></p>
 
 ### Обновление
 Плагин обновляется, когда в репозитории повышается версия в `plugin.json`:
@@ -108,7 +113,8 @@ claude plugin install document-skills@anthropic-agent-skills
 ```
 Without it everything works; the XSD check is skipped with a hint.
 
-The skills are written in Russian. Claude reads them fine and answers in your language.
+The survey, comparison page, previews and demo come in English and Russian (`--lang en`). The internal skill
+references are written in Russian; Claude reads them and answers in your language.
 
 ### Commands
 | Command | What it does |
@@ -130,8 +136,24 @@ You may need the plugin prefix: `/deckcraft:deck-brief`.
   transition, a motion language per section).
 
 ### Example
-`plugins/deckcraft/skills/pptx-morph/scripts/examples/demo_deck.py` builds "How a neural net finds a typo" from
-a brief (16 slides, one sentence carried through the whole deck). Storyboard: `demo_storyboard.md`.
+<p align="center"><img src="docs/media/en/layers.gif" width="640" alt="Demo: the sentence becomes network inputs, a wave runs through the layers"></p>
+<p align="center">
+<img src="docs/media/en/attention.gif" width="420" alt="Attention arcs, the error is found">
+<img src="docs/media/en/fix.gif" width="420" alt="Softmax picks the fix">
+</p>
+<p align="center"><img src="docs/media/en/demo_sheet.png" width="860" alt="Demo presentation thumbnails"></p>
+
+`plugins/deckcraft/skills/pptx-morph/scripts/examples/demo_deck.py` builds "How a neural network finds a typo" from
+a brief (16 slides, one sentence — “The kids next door was at home” — carried through the whole presentation).
+Run it with `--lang en` for English, without for Russian. Storyboard: `demo_storyboard.md`.
+
+The `/deck-brief` survey page ("customize" mode): tick several options, every item has a GIF preview, RU/EN switch
+in the corner.
+<p align="center"><img src="docs/media/en/brief_page.png" width="760" alt="Survey page of the brief"></p>
+
+After the variants are built — the compare page: the same moments of each presentation side by side; take the best
+one or assemble the result from parts.
+<p align="center"><img src="docs/media/en/compare_page.png" width="760" alt="Comparing variants A, B, C"></p>
 
 ### Updating
 Users get a new version when `version` in `plugin.json` is bumped:

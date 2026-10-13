@@ -1,4 +1,4 @@
-"""Сквозной мотив колоды: один объект-герой проходит через всю презентацию в разных РОЛЯХ.
+"""Сквозной мотив презентации: один объект-герой проходит через всю презентацию в разных РОЛЯХ.
 
 Мотив — не картинка на обложке. Это набор фигур с постоянными именами; меняется только состояние (центр, масштаб,
 поворот, прозрачность, размеры частей, подсветка), поэтому Morph переводит мотив из роли в роль:
@@ -96,7 +96,8 @@ class Flower:
                     grad = V.gradient([(0, a, alpha), (1, b, alpha)], angle=90)
                     fill = a
                 out.append(V.shape(f"!!{self.id}{k}_{j}", g, pivot=(cx, cy), rot=(turn + k * self.step()) % 360,
-                                   fill=fill, fa=alpha, grad=grad, ln=bg if j == 0 else None, lw=1.0 if j == 0 else 0,
+                                   fill=fill, fa=alpha, grad=grad, ln=mix(fill, theme.c("ink"), 0.35) if j == 0 else None,
+                                   lw=0.6 if j == 0 else 0, la=alpha,
                                    z=z + k * self.layers + j, meta=dict(DECOR)))
         r = self.length * self.disc * scale * disc_scale
         out.append(O(f"!!{self.id}_disc", "oval", cx - r, cy - r, 2 * r, 2 * r, fill="bg",
@@ -166,7 +167,7 @@ EDGE = (-0.35, SLIDE_H / 2)  # центр мотива-указателя: за 
 
 @dataclass
 class MotifTrack:
-    """Мотив на протяжении колоды: роли -> состояния, непрерывный поворот (шаг < 180°)."""
+    """Мотив на протяжении презентации: роли -> состояния, непрерывный поворот (шаг < 180°)."""
     motif: Flower | Orbit
     theme: Theme
     turn: float = 0.0

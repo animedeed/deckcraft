@@ -22,9 +22,36 @@ from lab._d_util import (DEC, S, bezier, body, dark, flow, head, kicker, label, 
 
 FAM = "neural"
 W, H = SLIDE_W, SLIDE_H
-WORDS = ["Вчера", "мы", "с", "братом", "пошёл", "в", "кино"]
+# Пример по языку: 7 токенов, ошибка согласования в токене 4 с подлежащим в токене 1 (дуга «hot»).
+# Английский — своя фраза, а не перевод: у «kids» есть отвлекающее «door» в единственном числе.
+PHRASE = {
+    "ru": dict(words=["Вчера", "мы", "с", "братом", "пошёл", "в", "кино"], fix="пошли",
+               cands=["пошли", "пошла", "ушли", "шли"],
+               lines=(["Сегодня", "утром", "шёл", "дождь."], ["Фильм", "оказался", "смешным."])),
+    "en": dict(words=["The", "kids", "next", "door", "was", "at", "home"], fix="were",
+               cands=["were", "are", "is", "be"],
+               lines=(["It", "was", "raining", "today."], ["The", "film", "was", "funny."])),
+}
+WORDS = PHRASE["ru"]["words"]
 ERR = 4
-FIX = "пошли"
+FIX = PHRASE["ru"]["fix"]
+CANDS = PHRASE["ru"]["cands"]
+LINES = PHRASE["ru"]["lines"]
+
+
+def use_lang(lang: str | None = None) -> None:
+    """Переключить пример фразы на язык (ru/en); надписи — через morphkit.i18n."""
+    global WORDS, FIX, CANDS, LINES
+    from morphkit.i18n import get_lang, register
+    d = PHRASE["en" if (lang or get_lang()) == "en" else "ru"]
+    WORDS, FIX, CANDS, LINES = d["words"], d["fix"], d["cands"], d["lines"]
+    register({  # подписи, где названы слова фразы
+        "«мы … пошёл» — ошибка": "“kids … was” — error", "«мы … пошёл»: число не совпало": "“kids … was”: number mismatch",
+        "«пошёл → мы» краснеет, по ней бежит точка: ошибка согласования найдена.":
+            "“was → kids” turns red and a dot runs along it: the agreement error is found.",
+        "«пошёл» далеко от «мы» и «братом»": "“was” sits far from “kids”", "Внимание «пошёл»": "Attention from “was”",
+        "Внимание: «мы»": "Attention: “kids”", "Внимание: «пошёл»": "Attention: “was”", "выход сети предлагает «пошли»":
+            "the output suggests “were”", "слово смотрит на подлежащее": "the word looks at its subject"})
 ATT = {4: [0.10, 0.62, 0.05, 0.35, 0.0, 0.04, 0.12], 6: [0.05, 0.08, 0.02, 0.06, 0.40, 0.45, 0.0],
        1: [0.10, 0.0, 0.18, 0.30, 0.55, 0.03, 0.04]}
 
@@ -185,7 +212,7 @@ def _wavy(x0, x1, y, n=60):
 
 
 def scanner(theme) -> Variant:
-    lines_ = [["Сегодня", "утром", "шёл", "дождь."], WORDS, ["Фильм", "оказался", "смешным."]]
+    lines_ = [LINES[0], WORDS, LINES[1]]
     ys = [2.4, 3.5, 4.6]
     lays = [chips_layout(theme, ln, 1.2, y, sz=24, gap=0.12, pad=0.06) for ln, y in zip(lines_, ys)]
     def text_objs(flag=False):
@@ -342,7 +369,7 @@ def net_backdrop(theme) -> Variant:
 
 def softmax_fix(theme) -> Variant:
     y = 5.6
-    cands = ["пошли", "пошла", "ушли", "шли"]
+    cands = CANDS
     logits = [0.82, 0.12, 0.04, 0.02]
     sl = []
     lay = chips_layout(theme, WORDS, 1.2, y)
@@ -383,7 +410,7 @@ def softmax_fix(theme) -> Variant:
 
 
 def seq_neural(theme) -> Variant:
-    """Фраза через колоду: фишки (обложка) → векторы → векторы сжимаются во входы сети → волна по слоям → выход
+    """Фраза через презентацию: фишки (обложка) → векторы → векторы сжимаются во входы сети → волна по слоям → выход
     возвращается в строку дугами внимания → сканер находит ошибку → сеть у края (навигация) + исправление → финал."""
     y = 4.8
     lay = chips_layout(theme, WORDS, 1.2, y)
@@ -419,13 +446,32 @@ def seq_neural(theme) -> Variant:
                 fx=[Fx("entrance_fade", f"v{i}_{k}", start="at", delay=0.15 + 0.012 * (i * 8 + k), dur=0.2) for i in range(n) for k in range(8)][:56]))
     # 3–4 векторы сжимаются во входы; волна по слоям
     inp = [(x - 0.16, yy - 0.16, 0.32, 0.32, "oval") for x, yy in inputs]
-    for act, title in ((0, "Входы сети"), (2, "Волна по слоям")):
-        o, loops = net_objs(theme, pos, active=act)
-        o += toks(inp)
-        o += [line(f"in{i}", inputs[i], pos[0][min(i * 5 // n, 4)], ln="accent2" if act == 0 else "line", lw=1.0, z=9) for i in range(n)]
-        if act == 0:
-            loops = [flow([inputs[i], pos[0][min(i * 5 // n, 4)]], n=1, period=1.5, size=0.09, name=f"in_{i}", color="accent2") for i in range(0, n, 2)]
-        S_.append(S(o + [head(title, w=6)], 900 if act == 0 else 700, loops=loops))
+    # 3 входы сети: векторы сжались во входы, загорается первый слой
+    o, loops = net_objs(theme, pos, active=0)
+    o += toks(inp)
+    o += [line(f"in{i}", inputs[i], pos[0][min(i * 5 // n, 4)], ln="accent2", lw=1.0, z=9) for i in range(n)]
+    loops = [flow([inputs[i], pos[0][min(i * 5 // n, 4)]], n=1, period=1.5, size=0.09, name=f"in_{i}", color="accent2")
+             for i in range(0, n, 2)]
+    S_.append(S(o + [head("Входы сети", w=6)], 900, loops=loops))
+    # 4 волна по слоям — на одном слайде, без скачка: слои загораются по очереди (связи k−1 → k, затем узлы k),
+    # сигнал бежит непрерывно от входа через все слои к выходу — связь каждого слоя со следующим видна
+    o, _ = net_objs(theme, pos, active=0)
+    o += toks(inp)
+    o += [line(f"in{i}", inputs[i], pos[0][min(i * 5 // n, 4)], ln="accent2", lw=1.0, z=9) for i in range(n)]
+    fx = []
+    for k in range(1, len(LAYERS)):
+        edges = V.union(*[stroke([a, b], 0.018) for a in pos[k - 1] for b in pos[k]])
+        o.append(vs(f"wave_e{k}", edges, fill="accent", fa=0.8, z=9, meta=dict(DEC)))
+        o.append(vs(f"wave_n{k}", V.union(*[V.circle(x, yy, 0.27) for x, yy in pos[k]]), fill="accent2", z=16,
+                    meta=dict(DEC)))
+        d = 0.15 + 0.6 * (k - 1)
+        fx += [Fx("entrance_fade", f"wave_e{k}", start="at", delay=d, dur=0.35),
+               Fx("entrance_fade", f"wave_n{k}", start="at", delay=d + 0.3, dur=0.3)]
+    loops = []
+    for r, (i, j0, j1, j2, j3) in enumerate([(0, 0, 1, 2, 0), (3, 2, 3, 3, 1), (6, 4, 6, 5, 2)]):
+        path = [inputs[i], pos[0][j0], pos[1][j1], pos[2][j2], pos[3][j3]]
+        loops.append(flow(path, n=1, period=2.4, size=0.1, name=f"wave_{r}", color="accent2", z=17, start=1.9 + 0.4 * r))
+    S_.append(S(o + [head("Волна по слоям", w=6)], 700, loops=loops, fx=fx))
     # 5 ответ возвращается в строку: дуги внимания от «пошёл»
     o5 = toks(row, cols={ERR: "accent"})
     loops = []
@@ -444,10 +490,17 @@ def seq_neural(theme) -> Variant:
         if hot:
             loops = [flow(pts, n=2, period=1.8, size=0.11, name="att", color="bad", z=11)]
     xe, we = lay[ERR]
-    o6 += [vs("!!scan", V.rect(xe + we / 2 - 0.4, 1.9, 0.8, 3.7), fill="accent", fa=0.25, z=8, meta=dict(DEC),
-              grad=V.gradient([(0, "accent", 0.0), (0.5, "accent", 0.45), (1, "accent", 0.0)], 0)),
+    # найденное слово: мягкий ореол из вложенных овалов (свет без краёв и обрыва) и волнистая черта, как в редакторе;
+    # без пульсации — внимание держит красная дуга «пошёл → мы» с бегущей точкой
+    cxe, cye = xe + we / 2, y + 0.31
+    for j in range(4):
+        o6.append(vs(f"glow{j}", V.ellipse(cxe, cye, we / 2 + 0.22 + 0.32 * j, 0.5 + 0.26 * j), fill="bad",
+                     fa=0.13 - 0.028 * j, z=7 - j, meta=dict(DEC)))
+    o6 += [vs("err_ul", _wavy(xe + 0.1, xe + we - 0.1, y + 0.74), fill="bad", z=22),
            head("«мы … пошёл» — ошибка", w=8)]
-    S_.append(S(o6, 800, loops=loops + [Loop("ripple", target="!!tk4", period=1.8, scale=1.4, color="bad", name="rip")]))
+    S_.append(S(o6, 800, loops=loops, fx=[Fx("entrance_fade", f"glow{j}", start="with" if j else "at", delay=0.1, dur=0.6)
+                                          for j in range(4)]
+                + [Fx("entrance_wipe", "err_ul", start="at", delay=0.2, dur=0.45, options={"direction": "left"})]))
     # 7 сеть у края — навигация; фраза исправлена
     words = list(WORDS)
     words[ERR] = FIX
@@ -484,5 +537,6 @@ def seq_neural(theme) -> Variant:
 
 
 def variants(theme) -> list[Variant]:
+    use_lang()
     return [seq_neural(theme), layers_wave(theme), attention(theme), token_vectors(theme), scanner(theme), prob_bars(theme),
             neuron_zoom(theme), net_pointer(theme), act_steps(theme), net_backdrop(theme), softmax_fix(theme)]

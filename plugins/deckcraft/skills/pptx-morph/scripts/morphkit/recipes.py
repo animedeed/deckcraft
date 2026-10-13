@@ -378,15 +378,29 @@ def panel_from_lens(id: str, x: float, y: float, w: float, h: float, r: float = 
 def agenda(id: str, sections: Sequence[str], state: str = "map", k: int = 0, y: float = 2.6, h: float = 2.3,
            gap: float = 0.3, x0: float = 0.6, x1: float = SLIDE_W - 0.6, header: tuple = (0.45, 0.35, 4.6, 0.72),
            frame: tuple | None = None, fill: str = "surface", ln: str = "line", accent: str = "accent", sz: float = 20,
-           z: int = 20) -> list[O]:
+           z: int = 20, bar_y: float = 0.14, bar_h: float = 0.46, bar_sz: float = 12) -> list[O]:
     """Приём из защиты ВКР: карточки разделов на «карте доклада»; карточка текущего раздела
     ВЫРАСТАЕТ в шапку раздела (state="header") или в рамку содержимого (state="frame"), остальные паркуются за
+    нижним краем; state="bar" — все карточки сжимаются в ряд рамок наверху (порядок сохраняется, ничего не летает
+    поперёк), текущая подсвечена — между разделами меняется только подсветка (отзыв: «контуры летают»). Иначе паркуются за
     нижним краем по своим колонкам и возвращаются на итоговой карте (state="map", k — пройденные: done-подсветка).
     Подложка карточки и подпись — разные объекты (подпись не переливается, при смене размера гаснет/появляется).
     Имена: !!{id}{i} (подложка), !!{id}{i}t (подпись)."""
     n = len(sections)
     cw = (x1 - x0 - gap * (n - 1)) / n
     out = []
+    if state == "bar":  # все карточки сжимаются в ряд рамок наверху; между разделами меняется только подсветка
+        bh, by_, bgap = bar_h, bar_y, 0.18
+        bw = (x1 - x0 - bgap * (n - 1)) / n
+        for i, name in enumerate(sections):
+            bx = x0 + i * (bw + bgap)
+            cur, done = i == k, i < k
+            out.append(O(f"!!{id}{i}", "rrect", bx, by_, bw, bh, fill=fill, ln=accent if cur else ln,
+                         lw=1.75 if cur else 1, la=1.0 if (cur or done) else 0.7, radius=0.12, z=z, meta={"bleed": True}))
+            out.append(O(f"!!{id}{i}tb", "text", bx, by_, bw, bh, txt=name, sz=bar_sz, b=cur,
+                         col="accent" if cur else ("ink2" if done else "muted"), al="c", va="m", z=z + 1,
+                         meta={"inset": 0.04}))
+        return out
     for i, name in enumerate(sections):
         cx = x0 + i * (cw + gap)
         if state == "map":
@@ -442,8 +456,8 @@ def magnify(objs: Sequence[O], lens: tuple[float, float, float], zoom: float = 2
 
 def menu_bar(id: str, sections: Sequence[str], current: int, y: float = 0.22, x0: float = 0.6, h: float = 0.42,
              sz: float = 13, gap: float = 0.35, char_w: float = 0.088, pill: str = "accent", z: int = 900) -> list[O]:
-    """Навигация как меню сайта (как в колоде-презентации продукта): строка разделов сверху; подложка-«пилюля»
-    одна на колоду (!!{id}_pill) и переезжает Morph к текущему разделу. Подписи не меняют текст — не переливаются."""
+    """Навигация как меню сайта (как в презентации-презентации продукта): строка разделов сверху; подложка-«пилюля»
+    одна на презентацию (!!{id}_pill) и переезжает Morph к текущему разделу. Подписи не меняют текст — не переливаются."""
     out, x = [], x0
     for i, name in enumerate(sections):
         w = len(name) * char_w * sz / 13 + 0.36

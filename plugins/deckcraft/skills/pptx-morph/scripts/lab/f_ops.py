@@ -25,7 +25,7 @@ def _head(t: str) -> list[O]:
 
 def bases(theme) -> dict:
     fl = MotifTrack(Flower("fl", petals=10, length=2.5, width=1.0), theme)
-    flower = P.to_vec(fl.at("hero", center=C, scale=1.0), n=48)
+    flower = P.to_vec(fl.at("hero", center=C, scale=1.0), n=120)
     dots = R.dots("dt", [(x + 0.08, y + 0.08) for x, y in R.grid(120, C[0] - 2.85, C[1] - 1.5, 15, 0.38)], 0.18,
                   colors=["accent" if (i * 7) % 11 == 0 else "ink2" for i in range(120)], z=20)
     cards = []

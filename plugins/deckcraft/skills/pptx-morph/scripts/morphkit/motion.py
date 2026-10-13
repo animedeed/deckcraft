@@ -55,7 +55,8 @@ def _local_polys(o: O, n_ellipse: int = 72) -> list[list[tuple[float, float]]]:
     x, y, w, h = o.x, o.y, o.w, o.h
     k = o.kind
     if k == "vec":
-        rings = [[(x + px * w, y + py * h) for px, py in ring] for ring in o.meta.get("vec", [])]
+        from .vector import smooth_rings
+        rings = [[(x + px * w, y + py * h) for px, py in ring] for ring in smooth_rings(o.meta.get("vec", []), w, h)]
     elif k == "oval":
         rings = [[(x + w / 2 + w / 2 * math.cos(2 * math.pi * i / n_ellipse),
                    y + h / 2 + h / 2 * math.sin(2 * math.pi * i / n_ellipse)) for i in range(n_ellipse)]]
@@ -347,6 +348,86 @@ def _loop_objs(slide: Slide, objs: list[O], t: float, theme: Theme) -> list[tupl
 
 # ----------------------------------------------------------------------------- кадры перехода и слайда
 
+NATIVE = {"zoom", "cube", "rotate", "fly_through", "gallery", "pan", "push", "ripple", "vortex", "shred", "page_curl",
+          "origami", "curtains", "cover", "uncover", "wipe", "fade"}
+
+
+def _native_frame(a: Image.Image, b: Image.Image, kind: str, t: float, bg) -> Image.Image:
+    """Приближение нативного перехода PowerPoint из двух статичных кадров (для превью и GIF, не точная копия)."""
+    W, H = a.size
+    out = Image.new("RGB", (W, H), bg)
+
+    def scaled(img, k, alpha=1.0, cx=0.5, cy=0.5):
+        w, h = max(1, int(W * k)), max(1, int(H * k))
+        im = img.resize((w, h), Image.BILINEAR)
+        x, y = int(W * cx - w / 2), int(H * cy - h / 2)
+        if alpha >= 1:
+            out.paste(im, (x, y))
+        else:
+            base = out.crop((x, y, x + w, y + h)) if x >= 0 and y >= 0 else None
+            if base is None:
+                out.paste(Image.blend(Image.new("RGB", (w, h), bg), im, alpha), (x, y))
+            else:
+                out.paste(Image.blend(base, im, alpha), (x, y))
+
+    if kind == "zoom":  # новый слайд вырастает из центра, старый растёт и тает
+        scaled(a, 1 + 0.25 * t, 1 - t)
+        scaled(b, 0.35 + 0.65 * t, min(1, t * 1.6))
+    elif kind == "fly_through":  # камера пролетает сквозь старый слайд
+        scaled(b, 0.7 + 0.3 * t, min(1, t * 1.3))
+        if t < 0.85:
+            scaled(a, 1 + 1.2 * t, max(0.0, 1 - t / 0.85))
+    elif kind in ("cube", "rotate"):  # грань уходит влево, новая разворачивается справа
+        wa, wb = max(1, int(W * (1 - t))), max(1, int(W * t))
+        ia = a.resize((wa, H), Image.BILINEAR)
+        ib = b.resize((wb, H), Image.BILINEAR)
+        shade = Image.new("RGB", (wa, H), (0, 0, 0))
+        out.paste(Image.blend(ia, shade, 0.35 * t), (0, 0))
+        out.paste(Image.blend(ib, Image.new("RGB", (wb, H), (0, 0, 0)), 0.35 * (1 - t)), (W - wb, 0))
+    elif kind in ("push", "pan", "gallery"):
+        dx = int(W * t)
+        out.paste(a, (-dx, 0)); out.paste(b, (W - dx, 0))
+    elif kind == "cover":
+        out.paste(a, (0, 0)); out.paste(b, (int(W * (1 - t)), 0))
+    elif kind == "uncover":
+        out.paste(b, (0, 0)); out.paste(a, (-int(W * t), 0))
+    elif kind == "curtains":  # половины старого слайда расходятся
+        out.paste(b, (0, 0))
+        dx = int(W / 2 * t)
+        out.paste(a.crop((0, 0, W // 2, H)), (-dx, 0)); out.paste(a.crop((W // 2, 0, W, H)), (W // 2 + dx, 0))
+    elif kind == "ripple":  # круг нового слайда расходится из центра
+        out.paste(a, (0, 0))
+        m = Image.new("L", (W, H), 0)
+        r = int(math.hypot(W, H) / 2 * t)
+        ImageDraw.Draw(m).ellipse((W // 2 - r, H // 2 - r, W // 2 + r, H // 2 + r), fill=255)
+        out.paste(b, (0, 0), m)
+    elif kind == "vortex":
+        out.paste(b, (0, 0))
+        if t < 0.9:
+            k = 1 - t / 0.9
+            im = a.rotate(-300 * t, resample=Image.BILINEAR, fillcolor=bg).resize((max(1, int(W * k)), max(1, int(H * k))))
+            out.paste(im, ((W - im.width) // 2, (H - im.height) // 2))
+    elif kind == "shred":
+        out.paste(b, (0, 0))
+        n = 12
+        for i in range(n):
+            x0, x1 = W * i // n, W * (i + 1) // n
+            dy = int(H * max(0.0, t * 1.6 - 0.5 * i / n) ** 2)
+            if dy < H:
+                out.paste(a.crop((x0, 0, x1, H)), (x0, dy))
+    elif kind in ("page_curl", "origami"):  # лист складывается к левому краю
+        out.paste(b, (0, 0))
+        w = max(1, int(W * (1 - t)))
+        im = a.resize((w, H), Image.BILINEAR)
+        out.paste(Image.blend(im, Image.new("RGB", (w, H), (255, 255, 255)), 0.25 * t), (0, 0))
+    elif kind == "wipe":
+        out.paste(a, (0, 0)); x = int(W * t)
+        out.paste(b.crop((0, 0, max(1, x), H)), (0, 0))
+    else:
+        out = Image.blend(a, b, t)
+    return out
+
+
 def render_transition(prev: Slide | None, cur: Slide, theme: Theme, fps: int = 15, hold: float | None = None,
                       w_px: int = W_PX) -> list[Image.Image]:
     """Кадры: переход prev -> cur (Morph или растворение), затем шкала эффектов и петли cur."""
@@ -360,6 +441,20 @@ def render_transition(prev: Slide | None, cur: Slide, theme: Theme, fps: int = 1
     by_b = {o.name: o for o in b_objs}
     plan = _fx_plan(cur)
     morph = cur.transition == "morph"
+    native = prev is not None and not morph and cur.transition in NATIVE and cur.transition != "fade"
+    if native:  # нативный переход: статичный конец prev и начало cur, сведённые приближением
+        def still(objs, skip_entr=False):
+            cv = Canvas(theme, (prev if not skip_entr else cur).bg, w_px)
+            for o in sorted(objs, key=lambda o: o.z):
+                if skip_entr and plan.get(o.name) and plan[o.name][0].startswith("entrance"):
+                    continue
+                cv.draw(o, 1.0)
+            return cv.frame().convert("RGB")
+        ia, ib = still(a_objs), still(b_objs, True)
+        bgc = tuple(int(theme.c(cur.bg)[i:i + 2], 16) for i in (0, 2, 4))
+        for k in range(n_tr):
+            frames.append(_native_frame(ia, ib, cur.transition, _ease((k + 1) / n_tr), bgc))
+        n_tr = 0
     for k in range(n_tr):
         t = _ease((k + 1) / n_tr)
         cv = Canvas(theme, cur.bg, w_px)

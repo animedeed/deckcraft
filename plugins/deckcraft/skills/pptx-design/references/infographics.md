@@ -1,29 +1,31 @@
-# Выбор формы: что показать и чем
+# Choosing the form: what to show and with what
 
-Сначала **работа данных** (что зритель должен увидеть), потом форма, и только потом цвет. Графики собираются из фигур, чтобы морфились. Цвет и проверка палитры — по скиллу `dataviz`, если он доступен.
+First the **data's job** (what the viewer must see), then the form, and only then the color. Charts are built from shapes so that they morph. Color and palette checks — per the `dataviz` skill, if it is available.
 
-| Работа данных | Форма | Чего избегать | Приём Morph |
+| Data's job | Form | What to avoid | Morph technique |
 |---|---|---|---|
-| Одно главное число | число-герой с висячей подписью и контекстом | 4 числа одного размера | появление эффектом; правка — зачёркивание и новое значение |
-| Доля целого (1 число) | кольцо-прогресс, полоса, «вафля» 10×10 | круговая диаграмма из 6 секторов | кольцо с заливкой по кругу, поле точек |
-| Доля в группах | поле точек по группам, сектора с выдвижением одного | 3D-пирог, легенда на 6 цветов | поле → группы, пирог по кускам |
-| Сравнение 2–3 значений | столбики с подписями у концов, «было / стало»; величина в предметах (листы-документы 3,3 против 1,1) | двойная ось | рост внутри слайда, раскол экрана |
-| Ранжирование | горизонтальные столбики по убыванию | алфавитный порядок | пересортировка |
-| Распределение | гистограмма из точек, усы-интервалы | среднее без разброса | поле → гистограмма, интервалы от нуля |
-| Связь двух величин | точечный график, наша точка крупнее | линия тренда без точек | разлёт из начала |
-| Изменение во времени | линия из сегментов, лента событий | 12 линий на одном графике | рисование ломаной, лента + камера |
-| Процесс / конвейер | узлы и связи с потоками | маркированный список шагов | маркер, поток-петля |
-| Цикл / шаги по кругу | цветок-указатель за краем экрана | стрелки-«карусель» из картинки | поворот цветка к теме, вертушка |
-| Иерархия / слои | дерево, изометрическая стопка | вложенные рамки | изометрия, раскрытие узла |
-| Связи многих со многими | граф, матрица | спагетти без фокуса | рост сети, прожектор |
-| Состав / из чего сделано | фрагментация, «разобранная» схема | легенда без связи с частями | разлёт, сборка |
-| Неопределённость | интервалы, полупрозрачные области | одна цифра без ± | интервалы от нуля |
+| One main number | hero number with a hanging caption and context | 4 numbers of the same size | entrance via an effect; a correction — strikethrough and a new value |
+| Share of a whole (1 number) | progress ring, bar, 10×10 “waffle” | pie chart with 6 sectors | ring with a circular fill, dot field |
+| Shares across groups | dot field by group, sectors with one pulled out | 3D pie, a 6-color legend | field → groups, pie piece by piece |
+| Comparing 2–3 values | bars with labels at the ends, “before / after”; magnitude in objects (document sheets 3.3 vs 1.1) | dual axis | growth within the slide, split screen |
+| Ranking | horizontal bars in descending order | alphabetical order | re-sorting |
+| Distribution | dot histogram, interval whiskers | a mean without spread | field → histogram, intervals from zero |
+| Relationship of two quantities | scatter plot, our point larger | trend line without points | scatter out from the origin |
+| Change over time | line made of segments, event strip | 12 lines on one chart | drawing the polyline, strip + camera |
+| Process / conveyor | nodes and links with flows | bulleted list of steps | marker, flow loop |
+| Cycle / steps in a circle | pointer flower beyond the screen edge | “carousel” arrows from a picture | turning the flower to the topic, pinwheel |
+| Hierarchy / layers | tree, isometric stack | nested frames | isometry, node expansion |
+| Many-to-many links | graph, matrix | spaghetti without focus | network growth, spotlight |
+| Composition / what it is made of | fragmentation, an “exploded” diagram | legend unconnected to the parts | scatter apart, assembly |
+| Uncertainty | intervals, semi-transparent areas | a single figure without ± | intervals from zero |
 
-## Правила честности
+## Honesty rules
 
-- Ось столбиков начинается с нуля. Обрезанная ось — только у точечных графиков, и это подписано.
-- Подписи у данных, единицы измерения в подписи («MAE, балла»).
-- Цвет следует за сущностью (красное вино всегда `red_wine`), а не за рангом.
-- Статусные цвета (`good`, `warn`, `bad`) — только для статусов, с подписью или знаком, никогда не единственный носитель смысла.
-- Числа берутся программно из файлов результатов, не вписываются руками.
-- Одна точка = N наблюдений — это подписывается.
+- The bar axis starts at zero. A truncated axis — only on scatter plots, and it is labeled.
+- Labels next to the data, units in the label (“MAE, points”).
+- Color follows the entity (red wine is always `red_wine`), not the rank.
+- Status colors (`good`, `warn`, `bad`) — only for statuses, with a label or a sign, never the sole carrier of meaning.
+- Numbers are taken programmatically from result files, not typed in by hand.
+- One dot = N observations — this is labeled.
+
+_Russian original: infographics.ru.md_

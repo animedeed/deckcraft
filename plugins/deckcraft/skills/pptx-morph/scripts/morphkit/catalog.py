@@ -1,4 +1,4 @@
-"""Каталог выбора для брифа колоды: мотивы, системы навигации, языки движения, переходы между разделами.
+"""Каталог выбора для брифа презентации: мотивы, системы навигации, языки движения, переходы между разделами.
 
 Каждый пункт: ключ, название, одна строка «почему / когда», теги темы, превью (вариант лаборатории lab/f_*.py — из
 него делается GIF для витрины-опроса). Подбор по теме — как у палитр:
@@ -7,8 +7,8 @@
     suggest_motifs("Оценка качества вина по химическому анализу", k=3)   # -> [Choice(...), ...] с причиной
     brief = auto_brief("Мониторинг нагрузки в электросетях", sections=[...])  # «решаю сам»
 
-Правила (pptx-design/references/structure.md): одна система навигации на колоду; один тип перехода между разделами;
-язык движения — свой у каждого раздела, внутри раздела повторяется; мотив живёт всю колоду в разных ролях.
+Правила (pptx-design/references/structure.md): одна система навигации на презентацию; один тип перехода между разделами;
+язык движения — свой у каждого раздела, внутри раздела повторяется; мотив живёт всю презентацию в разных ролях.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ class Choice:
     preview: tuple[str, str] | None = None  # (семейство лаборатории, ключ варианта)
     reason: str = ""
     score: float = 0.0
+    hits: list[str] = field(default_factory=list)
 
 
 MOTIFS: list[Choice] = [
@@ -69,12 +70,12 @@ MOTIFS: list[Choice] = [
 ]
 
 NAVIGATION: list[Choice] = [
-    Choice("agenda", "Карта доклада → шапка", "карточки разделов; текущая вырастает в шапку, остальные ждут за краем "
-           "(приём защиты ВКР)", ["защит", "вкр", "доклад", "отчёт", "отчет", "курс"], None),
+    Choice("agenda", "Карта доклада → ряд рамок", "карточки разделов складываются в ряд рамок наверху, "
+           "дальше едет только подсветка (приём защиты ВКР)", ["защит", "вкр", "доклад", "отчёт", "отчет", "курс"], ("f_nav", "agenda")),
     Choice("menu", "Меню сайта", "строка разделов сверху, подсветка переезжает (как на сайте продукта)",
-           ["сайт", "продукт", "стартап", "сервис", "приложен", "интерфейс"], None),
+           ["сайт", "продукт", "стартап", "сервис", "приложен", "интерфейс"], ("f_nav", "menu")),
     Choice("counter", "Метка блока + счётчик", "«Блок 2 — Данные» и «9|27»: строго и спокойно",
-           ["техн", "инженер", "архитект", "длинн", "лекци", "урок", "семинар", "занят"], None),
+           ["техн", "инженер", "архитект", "длинн", "лекци", "урок", "семинар", "занят"], ("f_nav", "counter")),
     Choice("motif", "Мотив у края с делениями", "часть мотива смотрит на заголовок; деления — пройденные темы раздела",
            ["концепт", "образ", "вин", "природ", "дизайн"], ("f_wine", "bunch_ripen")),
 ]
@@ -101,14 +102,42 @@ MOTION: list[Choice] = [
 POINTER_MOTIFS = {"flower", "bunch", "glass", "ring", "orbit", "gears", "radar"}
 
 TRANSITIONS: list[Choice] = [
-    Choice("pointer_turn", "Поворот указателя", "мотив у края поворачивается к следующему разделу", [], None),
-    Choice("agenda_grow", "Карточка → шапка", "карта доклада: карточка раздела вырастает, остальные уезжают", [], None),
+    Choice("pointer_turn", "Поворот указателя", "мотив у края поворачивается к следующему разделу", [], ("f_nav", "pointer")),
+    Choice("agenda_grow", "Карта → ряд рамок", "карта доклада складывается в ряд рамок наверху, едет только подсветка", [], ("f_nav", "agenda")),
     Choice("ripen", "Деление / созревание", "в навигаторе заливается следующая часть", [], ("f_wine", "bunch_ripen")),
     Choice("camera", "Камера в глубину", "камера пролетает к следующему слою мира", [], ("f_depth", "dive_frames")),
 ]
 
 
-def _match(choices: list[Choice], text: str, k: int) -> list[Choice]:
+EN_TAGS = {  # основы английских слов темы
+    "bunch": ["wine", "tasting", "grape", "food", "drink"], "glass": ["wine", "drink", "liquid", "volume", "bar"],
+    "flower": ["design", "art", "nature", "colou?r", "fashion", "aesthet", "cultur"],
+    "ring": ["cycle", "stage", "kpi", "plan", "process", "year", "quarter", "strateg"],
+    "venn": ["approach", "method", "compar", "research", "overlap", "hypothes", "review"],
+    "platform": ["architect", "system", "platform", "service", "module", "stack", "erp", "backend", "infrastruct"],
+    "energy": ["energy", "electric", "power", "grid", "substation", "current"],
+    "docs": ["document", "regulat", "law", "policy", "contract", "revision", "legal"],
+    "neural": ["neural", "ai\\b", "model", "train", "text", "token", "llm", "ml\\b", "classif", "typo"],
+    "tree": ["ecolog", "nature", "forest", "growth", "history", "biolog", "climate"],
+    "hexmap": ["region", "geo", "market", "map", "city", "territor", "branch", "sales"],
+    "number": ["result", "kpi", "revenue", "profit", "growth", "metric", "total"],
+    "radar": ["analys", "search", "monitor", "competit", "risk", "detect"],
+    "orbit": ["space", "physic", "customer", "journey", "funnel", "retention", "orbit"],
+    "gears": ["manufactur", "mechan", "process", "automat", "factory", "engineer"],
+    "globe": ["world", "global", "countr", "export", "international"],
+    "agenda": ["defen[cs]e", "thesis", "report", "course", "talk"], "menu": ["website", "product", "startup", "service", "app", "interface"],
+    "counter": ["technical", "engineer", "architect", "lecture", "lesson", "seminar", "class"],
+    "motif": ["concept", "image", "wine", "nature", "design"],
+    "dots": ["data", "sample", "pair", "customer", "people"], "fragments": ["composition", "part", "structure", "component"],
+    "circle": ["cycle", "stage", "step", "progress", "iteration"], "depth": ["architect", "layer", "level", "device", "system"],
+    "flow": ["network", "graph", "link", "model", "flow", "transfer"], "growth": ["result", "metric", "compar", "dynamic", "train"],
+    "lens": ["error", "check", "audit", "detail", "search", "typo"], "fold": ["plan", "summary", "letter", "proposal", "product"],
+}
+for _c in MOTIFS + NAVIGATION + MOTION:
+    _c.tags = list(_c.tags) + [t for t in EN_TAGS.get(_c.key, []) if t not in _c.tags]
+
+
+def _match(choices: list[Choice], text: str, k: int, lang: str | None = None) -> list[Choice]:
     low = text.lower()
     out = []
     for c in choices:
@@ -117,32 +146,42 @@ def _match(choices: list[Choice], text: str, k: int) -> list[Choice]:
             m = re.search(r"\b" + t, low)
             if m:
                 hits.append(re.match(r"\w+", low[m.start():]).group(0))
-        q = Choice(**{**asdict(c), "preview": c.preview})
+        from .i18n import tr, ui
+        q = Choice(**{**asdict(c), "preview": c.preview, "title": tr(c.title, lang), "why": tr(c.why, lang)})
         q.score = len(set(hits))
-        q.reason = c.why[0].upper() + c.why[1:] + (f". В теме: {', '.join(dict.fromkeys(hits))}." if hits else ".")
+        q.hits = list(dict.fromkeys(hits))
+        q.reason = q.why[0].upper() + q.why[1:] + (f". {ui('topic_words', lang)}: {', '.join(q.hits)}." if hits else ".")
         out.append(q)
     out.sort(key=lambda c: (-c.score, choices.index(next(x for x in choices if x.key == c.key))))
     return out[:k]
 
 
-def suggest_motifs(text: str, k: int = 3) -> list[Choice]:
-    return _match(MOTIFS, text, k)
+def suggest_motifs(text: str, k: int = 3, lang: str | None = None) -> list[Choice]:
+    return _match(MOTIFS, text, k, lang)
 
 
-def suggest_navigation(text: str, k: int = 2) -> list[Choice]:
-    return _match(NAVIGATION, text, k)
+def suggest_navigation(text: str, k: int = 2, lang: str | None = None) -> list[Choice]:
+    return _match(NAVIGATION, text, k, lang)
 
 
-def suggest_motion(section: str, k: int = 2) -> list[Choice]:
-    return _match(MOTION, section, k)
+def suggest_motion(section: str, k: int = 2, lang: str | None = None) -> list[Choice]:
+    return _match(MOTION, section, k, lang)
 
 
-def auto_brief(topic: str, sections: list[str], audience: str = "", minutes: int = 10) -> dict:
+def localized(choices: list[Choice], lang: str | None = None) -> list[Choice]:
+    """Копии пунктов каталога с названием и причиной на языке lang."""
+    from .i18n import tr
+    return [Choice(**{**asdict(c), "preview": c.preview, "title": tr(c.title, lang), "why": tr(c.why, lang)}) for c in choices]
+
+
+def auto_brief(topic: str, sections: list[str], audience: str = "", minutes: int = 10, lang: str | None = None) -> dict:
     """«Решаю сам»: палитра, мотив, навигация, переход между разделами и язык движения каждого раздела — с причиной.
     Языки движения соседних разделов не повторяются."""
-    pal = suggest_palettes(topic, k=3)
-    motif = suggest_motifs(topic, k=3)
-    nav = suggest_navigation(topic + " " + audience, k=2)
+    from .i18n import get_lang, tr
+    lang = lang or get_lang()
+    pal = suggest_palettes(topic, k=3, lang=lang)
+    motif = suggest_motifs(topic, k=3, lang=lang)
+    nav = suggest_navigation(topic + " " + audience, k=2, lang=lang)
     # «мотив у края» — только у мотивов с формой-указателем (лепесток, ягода, сегмент кольца, зубец, комета, луч)
     pointer_ok = motif[0].key in POINTER_MOTIFS and motif[0].score > 0
     nav = [c for c in nav if c.key != "motif" or pointer_ok]
@@ -151,22 +190,63 @@ def auto_brief(topic: str, sections: list[str], audience: str = "", minutes: int
              "menu": "agenda_grow", "counter": "camera"}[nav_key]
     langs, prev, used = [], None, {}
     for s in sections:
-        cand = [c for c in suggest_motion(s, k=len(MOTION)) if c.key != prev]
-        # совпадение с темой раздела важнее; без совпадения — язык, который в колоде ещё не звучал
+        cand = [c for c in suggest_motion(s, k=len(MOTION), lang=lang) if c.key != prev]
+        # совпадение с темой раздела важнее; без совпадения — язык, который в презентации ещё не звучал
         cand.sort(key=lambda c: (-c.score, used.get(c.key, 0), [m.key for m in MOTION].index(c.key)))
         pick = cand[0]
-        langs.append({"section": s, "motion": pick.key, "title": pick.title, "reason": pick.reason})
+        langs.append({"section": s, "motion": pick.key, "title": pick.title, "reason": pick.reason, "hits": pick.hits})
         used[pick.key] = used.get(pick.key, 0) + 1
         prev = pick.key
-    return {"topic": topic, "audience": audience, "minutes": minutes,
-            "palette": {"key": pal[0].theme.name, "title": pal[0].title, "reason": pal[0].reason,
-                        "alternatives": [{"key": p.theme.name, "title": p.title, "reason": p.reason} for p in pal[1:]]},
-            "motif": {"key": motif[0].key, "title": motif[0].title, "reason": motif[0].reason,
+    return {"topic": topic, "audience": audience, "minutes": minutes, "lang": lang,
+            "palette": {"key": pal[0].theme.name, "title": tr(pal[0].title, lang), "reason": pal[0].reason, "hits": pal[0].hits,
+                        "alternatives": [{"key": p.theme.name, "title": tr(p.title, lang), "reason": p.reason} for p in pal[1:]]},
+            "motif": {"key": motif[0].key, "title": motif[0].title, "reason": motif[0].reason, "hits": motif[0].hits,
                       "alternatives": [{"key": m.key, "title": m.title} for m in motif[1:]]},
-            "navigation": {"key": nav_key, "title": next(c.title for c in NAVIGATION if c.key == nav_key)},
-            "transition": {"key": trans, "title": next(c.title for c in TRANSITIONS if c.key == trans)},
+            "navigation": {"key": nav_key, "title": tr(next(c.title for c in NAVIGATION if c.key == nav_key), lang)},
+            "transition": {"key": trans, "title": tr(next(c.title for c in TRANSITIONS if c.key == trans), lang)},
             "sections": langs}
 
 
-__all__ = ["Choice", "MOTIFS", "POINTER_MOTIFS", "NAVIGATION", "MOTION", "TRANSITIONS", "suggest_motifs", "suggest_navigation",
-           "suggest_motion", "auto_brief"]
+
+def localize_brief(brief: dict, lang: str) -> dict:
+    """Тот же бриф (те же ключи и совпавшие слова темы) с подписями и причинами на языке lang —
+    для переключателя языка на странице опроса. Тема, разделы и аудитория остаются как написал пользователь."""
+    from .i18n import tr, ui
+    from .palette import CATALOG
+
+    def why(choices, key, hits):
+        w = tr(next((c.why for c in choices if c.key == key), ""), lang)
+        if not w:
+            return ""
+        return w[0].upper() + w[1:] + (f". {ui('topic_words', lang)}: {', '.join(hits)}." if hits else ".")
+
+    def title(choices, key):
+        return tr(next((c.title for c in choices if c.key == key), key), lang)
+
+    pals = {p.theme.name: p for p in CATALOG}
+
+    def pal(key, hits=()):
+        p = pals.get(key)
+        if p is None:
+            return {"key": key, "title": key, "reason": ""}
+        w = tr(p.why, lang)
+        return {"key": key, "title": tr(p.title, lang),
+                "reason": w[0].upper() + w[1:] + (f". {ui('topic_words', lang)}: {', '.join(hits)}." if hits else ".")}
+
+    b = brief
+    out = dict(b, lang=lang)
+    out["palette"] = {**pal(b["palette"]["key"], b["palette"].get("hits") or []), "hits": b["palette"].get("hits") or [],
+                      "alternatives": [pal(a["key"]) for a in b["palette"].get("alternatives", [])]}
+    m = b["motif"]
+    out["motif"] = {"key": m["key"], "title": title(MOTIFS, m["key"]), "hits": m.get("hits") or [],
+                    "reason": why(MOTIFS, m["key"], m.get("hits") or []),
+                    "alternatives": [{"key": a["key"], "title": title(MOTIFS, a["key"])} for a in m.get("alternatives", [])]}
+    out["navigation"] = {"key": b["navigation"]["key"], "title": title(NAVIGATION, b["navigation"]["key"])}
+    out["transition"] = {"key": b["transition"]["key"], "title": title(TRANSITIONS, b["transition"]["key"])}
+    out["sections"] = [dict(s, title=title(MOTION, s["motion"]), reason=why(MOTION, s["motion"], s.get("hits") or []))
+                       for s in b.get("sections", [])]
+    return out
+
+
+__all__ = ["Choice", "localize_brief", "MOTIFS", "POINTER_MOTIFS", "NAVIGATION", "MOTION", "TRANSITIONS", "suggest_motifs", "suggest_navigation",
+           "suggest_motion", "auto_brief", "localized", "EN_TAGS"]

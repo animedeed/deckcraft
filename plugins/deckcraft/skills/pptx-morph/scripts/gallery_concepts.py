@@ -39,7 +39,7 @@ def deck(theme) -> list:
     S.append(Slide(fl.at("hero", center=(9.3, 3.75)) + [
         O("!!ttl", "text", 0.8, 2.3, 6.2, 1.6, txt=["Сквозной мотив", "в шести ролях"], sz=40, b=True, font="head",
           col="ink", z=90),
-        O("!!sub", "text", 0.8, 4.0, 6.0, 0.9, txt="Один и тот же цветок ведёт всю колоду: обложка, указатель, фон, "
+        O("!!sub", "text", 0.8, 4.0, 6.0, 0.9, txt="Один и тот же цветок ведёт всю презентацию: обложка, указатель, фон, "
           "диаграмма, портал, прогресс", sz=17, col="ink2", z=90)],
         transition="fade", dur=500, fx=R.mandala_spin_in("fl", 8, delay=0.1, step=0.05),
         layout="cover", title="hero"))
@@ -63,7 +63,7 @@ def deck(theme) -> list:
     for t in range(2):
         S.append(Slide(fl.at("backdrop", t=t) + head("фон", "Мотив под содержимым: бледный и медленный", x=0.8) + [
             O(f"!!card{t}", "rrect", 0.8, 2.0, 5.6, 3.6, fill="surface", ln="line", lw=1, radius=0.14, z=60),
-            T(["Фон дрейфует на 7° за слайд —", "колода «дышит», а текст", "читается: прозрачность 10 %"],
+            T(["Фон дрейфует на 7° за слайд —", "презентация «дышит», а текст", "читается: прозрачность 10 %"],
               1.1, 2.3, 5.0, 2.0, sz=18, col="ink", name=f"!!cardt{t}")],
             dur=800, layout="panel", technique="фон-дрейф", title=f"backdrop {t}"))
     # 5. portal

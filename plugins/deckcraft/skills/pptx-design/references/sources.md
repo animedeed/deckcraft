@@ -1,28 +1,30 @@
-# Источники
+# Sources
 
-Что изучено и что из каждого источника взято. Код со строгими лицензиями не копировался.
+What was studied and what was taken from each source. Code under strict licenses was not copied.
 
-| Источник | Что это | Что взято |
+| Source | What it is | What was taken |
 |---|---|---|
-| zarazhangrui/frontend-slides | скилл HTML-слайдов | стилевые превью до сборки, «покажи три направления», отказ от шаблонных градиентов |
-| guizang-ppt-skill | журнальные и швейцарские стили, 22 макета | правило «≥ 6 разных макетов на 8 слайдов», журнальная вёрстка, крупная типографика, тонкие линейки |
-| jiji262/claude-design | дизайн-принципы для Claude | иерархия, пустота, «один акцент», антишаблоны ИИ-слайдов |
-| aaronvanston/presentation-design | правила презентаций | заголовок-вывод, одна мысль на слайд, режимы доклада и чтения |
-| Anthropic pptx, theme-factory | скиллы Anthropic | проверка XSD, рендер, роли цветов темы |
-| hugohe3/ppt-master (MIT) | генератор колод с анимациями | реестр 203 эффектов PowerPoint 16, 54 перехода, «носители непрерывности», карусель, одометр, параллакс, флип-карта |
-| BramAlkema/pptx-animation-skill (AGPL) | скилл анимаций | только знания: «мёртвые» атрибуты анимаций, допустимые attrName, фильтры |
-| Microsoft: Morph tips and tricks | официальные советы | что морфится (3D-поворот, обрезка, регуляторы, ≤ 1 дырки, свободные формы с равным числом точек), byWord/byChar, `!!` |
-| power-up.training | 7 wow-проектов Morph | зум холста, скользящее окно-фокус, Ken Burns, фотоальбом |
-| Dr. Saeed Faal (видео-эталон пользователя) | цветок-инфографика | лепесток = пересечение кругов, слои с градиентом, поворот копий, вход Spinner, нумерация по кругу |
-| TikTok @pptgem | ролики приёмов PowerPoint | ждёт загрузки пользователем в `design-refs` (ссылки не открываются без JS) |
-| Pinterest, Behance, Dribbble | доски «PowerPoint morph», «infographic slide», «bento layout», «editorial deck» | композиционные идеи: бенто, висячие подписи, номер-фактура, цветовые поля; по протоколу разбора |
+| zarazhangrui/frontend-slides | HTML slides skill | style previews before building, “show three directions”, no template gradients |
+| guizang-ppt-skill | magazine and Swiss styles, 22 layouts | the “≥ 6 different layouts per 8 slides” rule, magazine layout, large typography, thin rules |
+| jiji262/claude-design | design principles for Claude | hierarchy, white space, “one accent”, anti-patterns of AI slides |
+| aaronvanston/presentation-design | presentation rules | takeaway headline, one idea per slide, talk and reading modes |
+| Anthropic pptx, theme-factory | Anthropic skills | XSD check, render, theme color roles |
+| hugohe3/ppt-master (MIT) | presentation generator with animations | registry of 203 PowerPoint 16 effects, 54 transitions, “continuity carriers”, carousel, odometer, parallax, flip card |
+| BramAlkema/pptx-animation-skill (AGPL) | animation skill | knowledge only: “dead” animation attributes, valid attrName values, filters |
+| Microsoft: Morph tips and tricks | official tips | what morphs (3D rotation, cropping, adjustment handles, ≤ 1 hole, freeforms with an equal number of points), byWord/byChar, `!!` |
+| power-up.training | 7 Morph wow projects | canvas zoom, sliding focus window, Ken Burns, photo album |
+| Dr. Saeed Faal (the user's reference video) | flower infographic | petal = intersection of circles, gradient layers, rotating copies, Spinner entrance, numbering around the circle |
+| TikTok @pptgem | PowerPoint technique videos | waiting for the user to upload them to `design-refs` (links do not open without JS) |
+| Pinterest, Behance, Dribbble | boards “PowerPoint morph”, “infographic slide”, “bento layout”, “editorial deck” | composition ideas: bento, hanging captions, number as texture, color fields; per the analysis protocol |
 
-Поисковые запросы для новых идей:
-- «PowerPoint morph transition tutorial»;
-- «morph infographic»;
-- «PowerPoint merge shapes infographic»;
-- «editorial presentation layout»;
-- «bento grid slide»;
-- «kinetic typography PowerPoint»;
-- «isometric PowerPoint»;
-- «PowerPoint 3D rotation morph».
+Search queries for new ideas:
+- “PowerPoint morph transition tutorial”;
+- “morph infographic”;
+- “PowerPoint merge shapes infographic”;
+- “editorial presentation layout”;
+- “bento grid slide”;
+- “kinetic typography PowerPoint”;
+- “isometric PowerPoint”;
+- “PowerPoint 3D rotation morph”.
+
+_Russian original: sources.ru.md_

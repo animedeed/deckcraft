@@ -275,7 +275,8 @@ def _set_custgeom(sh, o: O) -> None:
     from .vector import custgeom_xml
     sp_pr = sh._element.spPr
     old = sp_pr.find(A + "prstGeom")
-    sp_pr.replace(old, etree.fromstring(custgeom_xml(o.meta["vec"])))
+    from .vector import smooth_rings
+    sp_pr.replace(old, etree.fromstring(custgeom_xml(smooth_rings(o.meta["vec"], o.w, o.h))))
 
 
 def add_object(slide_obj, o: O, theme: Theme):

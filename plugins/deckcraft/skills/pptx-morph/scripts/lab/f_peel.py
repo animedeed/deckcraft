@@ -30,7 +30,7 @@ def band_cols(theme, n):
 
 
 def bud_parts(base, length, width, layers=5, angle=0.0):
-    return [V.resample(g, N) for g in V.bud(base, length, width, layers=layers, angle=angle, h_ratio=0.8, w_ratio=0.8)]
+    return [V.resample(g, N) for g in V.bud(base, length, width, layers=layers, angle=angle, h_ratio=0.8, w_ratio=0.8, nested=False)]
 
 
 LEVELS = ["Миссия", "Цели", "Проекты", "Задачи", "Действие"]
@@ -206,7 +206,7 @@ def v_topo(theme):
 
 def _flower(theme, cx, cy, active, detach=None, sep=0.0, push=0.0, scale=1.0, dim=1.0, petals=8, layers=4,
             length=2.5, width=1.0, key="!!f"):
-    parts = [V.resample(g, N) for g in V.bud((cx, cy), length, width, layers=layers, angle=-90, h_ratio=0.78, w_ratio=0.8)]
+    parts = [V.resample(g, N) for g in V.bud((cx, cy), length, width, layers=layers, angle=-90, h_ratio=0.78, w_ratio=0.8, nested=False)]
     ink, bg = theme.c("ink"), theme.c("bg")
     cols = [mix(ink, bg, 0.12 + 0.18 * j) for j in range(layers - 1)] + [theme.c("accent")]
     R = 8.0
@@ -448,7 +448,7 @@ def v_seq_bud(theme):
     bg, ink = theme.c("bg"), theme.c("ink")
     base = (8.2, 6.55)
     L, W = 4.7, 3.2
-    raw = V.bud(base, L, W, layers=5, angle=-90, h_ratio=0.8, w_ratio=0.8)
+    raw = V.bud(base, L, W, layers=5, angle=-90, h_ratio=0.8, w_ratio=0.8, nested=False)
     cols = band_cols(theme, 5)[:4] + [theme.c("accent")]
     # слой 1 заранее разрезан на три дольки (станут карточками)
     b1 = raw[1]

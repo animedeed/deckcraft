@@ -1,28 +1,30 @@
-# Компоненты `morphkit.components.Kit`
+# Components `morphkit.components.Kit`
 
-`k = Kit(theme)`. Каждый метод возвращает `list[O]` (кроме `link`, `flow`, `terminal`, `fit`). Имена строятся от `id` с префиксом `!!`: одинаковый `id` на соседних слайдах даёт пару Morph. Цвета — роли темы.
+`k = Kit(theme)`. Every method returns `list[O]` (except `link`, `flow`, `terminal`, `fit`). Names are built from `id` with the `!!` prefix: the same `id` on neighboring slides gives a Morph pair. Colors are theme roles.
 
-| Метод | Что делает | Важное |
+| Method | What it does | Notes |
 |---|---|---|
-| `fit(lines, w, sz, font, bold)` | наибольший кегль ≤ sz, при котором строки помещаются | метрики шрифта-заменителя, шаг 6% |
-| `label(text, id="sec")` | метка раздела капителью | сквозной якорь `!!sec` |
-| `title(text, id="ttl", size="h1", w=…)` | заголовок, автоподбор кегля | `\n` — явные строки |
-| `text(id, x, y, w, txt, size, color, bullets)` | абзацы/пункты | высота считается сама |
-| `folio(n, total)` | колонтитул «03 / 18» | моно, `!!folio` |
-| `rail(steps, active)` | таблетки шагов, активная раскрыта | приём 8 |
-| `progress(n, active)` | точки прогресса | `!!s0…` |
-| `card(id, x, y, w, h, title, body, kicker)` | карточка | части `!!id`, `_k`, `_t`, `_b` |
-| `stat(id, x, y, w, value, label)` | большое число + подпись | `_v`, `_l` |
-| `callout(id, x, y, w, kicker, text, tone)` | предупреждение / типовая ошибка | тонированная подложка, без цветного края |
-| `node(id, x, y, w, h, label, sub)` | узел схемы | `sub` моноширинный (пути файлов) |
-| `link(id, a, b)` → `(objs, path)` | стрелка от края до края + путь для потока | путь от центра к центру |
-| `flow(path, n, period)` → `Loop` | петля-поток | точки под узлами (`z=5`) |
-| `code(id, x, y, w, code, title, highlight)` | панель кода с подсветкой Python | прогоны готовые: `{}` безопасны |
-| `terminal(id, x, y, w, lines)` → `(objs, cursor)` | терминал, `$ ` — приглашение | курсор для `Loop("blink")` |
-| `tree(id, x, y, entries)` | дерево файлов `(глубина, имя, пояснение, выделить)` | |
-| `table(id, x, y, widths, rows, highlight)` | таблица из текстов и линеек | первая строка — шапка |
-| `bars(id, x, y, w, h, values, labels, zero)` | горизонтальные столбики | `zero=True` — нулевое состояние |
-| `columns(id, x, y, w, h, values, labels, zero)` | вертикальные столбики | общая база |
-| `bg_grid(step)` | миллиметровка (фактура) | без пар Morph |
+| `fit(lines, w, sz, font, bold)` | the largest font size ≤ sz at which the lines fit | substitute-font metrics, 6% step |
+| `label(text, id="sec")` | section label in small caps | persistent anchor `!!sec` |
+| `title(text, id="ttl", size="h1", w=…)` | title, auto-fitted font size | `\n` — explicit lines |
+| `text(id, x, y, w, txt, size, color, bullets)` | paragraphs/bullets | height is computed automatically |
+| `folio(n, total)` | folio “03 / 18” | monospace, `!!folio` |
+| `rail(steps, active)` | step pills, the active one expanded | technique 8 |
+| `progress(n, active)` | progress dots | `!!s0…` |
+| `card(id, x, y, w, h, title, body, kicker)` | card | parts `!!id`, `_k`, `_t`, `_b` |
+| `stat(id, x, y, w, value, label)` | big number + caption | `_v`, `_l` |
+| `callout(id, x, y, w, kicker, text, tone)` | warning / common mistake | tinted backing, no colored edge |
+| `node(id, x, y, w, h, label, sub)` | diagram node | `sub` is monospace (file paths) |
+| `link(id, a, b)` → `(objs, path)` | edge-to-edge arrow + path for a flow | the path goes center to center |
+| `flow(path, n, period)` → `Loop` | flow loop | dots under the nodes (`z=5`) |
+| `code(id, x, y, w, code, title, highlight)` | code panel with Python highlighting | runs prebuilt: `{}` are safe |
+| `terminal(id, x, y, w, lines)` → `(objs, cursor)` | terminal, `$ ` is the prompt | cursor for `Loop("blink")` |
+| `tree(id, x, y, entries)` | file tree `(depth, name, comment, highlight)` | |
+| `table(id, x, y, widths, rows, highlight)` | table made of texts and rules | the first row is the header |
+| `bars(id, x, y, w, h, values, labels, zero)` | horizontal bars | `zero=True` — zero state |
+| `columns(id, x, y, w, h, values, labels, zero)` | vertical columns | shared baseline |
+| `bg_grid(step)` | graph-paper grid (texture) | no Morph pairs |
 
-Низкоуровневый объект — `O(name, kind, x, y, w, h, …)`: `kind` ∈ rect, rrect, oval, text, line, arrow, arc, chevron, tri, pent, hex, donut, img. Поля: `fill, fa, ln, lw, la, dash, head, txt, sz, col, b, font, al, va, spacing, para_gap, bullets, caps, tracking, rot, radius, adj, img, crop, world, z, meta`. Полезные `meta`: `inset` (поля текста), `runs` (готовые прогоны), `bleed` (намеренный вылет за край), `texture` (мелкий текст-фактура), `decor` (не проверять контраст), `parallax`, `allow_bar`.
+The low-level object is `O(name, kind, x, y, w, h, …)`: `kind` ∈ rect, rrect, oval, text, line, arrow, arc, chevron, tri, pent, hex, donut, img. Fields: `fill, fa, ln, lw, la, dash, head, txt, sz, col, b, font, al, va, spacing, para_gap, bullets, caps, tracking, rot, radius, adj, img, crop, world, z, meta`. Useful `meta` keys: `inset` (text margins), `runs` (prebuilt runs), `bleed` (intentional bleed beyond the edge), `texture` (small texture text), `decor` (skip the contrast check), `parallax`, `allow_bar`.
+
+_Russian original: components.ru.md_

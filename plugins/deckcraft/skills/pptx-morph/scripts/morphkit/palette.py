@@ -106,6 +106,7 @@ class Palette:
     tags: list[str] = field(default_factory=list)  # основы слов (регулярные выражения от начала слова)
     reason: str = ""  # заполняет suggest(): why + совпавшие слова темы
     score: float = 0.0
+    hits: list[str] = field(default_factory=list)  # совпавшие слова темы
 
     @property
     def title(self) -> str:
@@ -147,7 +148,25 @@ CATALOG: list[Palette] = [
 ]
 
 
-def suggest(text: str, k: int = 3, prefer_dark: bool | None = None) -> list[Palette]:
+EN_TAGS = {  # основы английских слов темы (для материала на английском)
+    "lab": ["chemi", "experiment", "analys", "dataset", "data"],
+    "cellar": ["wine", "tasting", "drink", "gastronom", "restaurant", "cuisine", "cook"],
+    "blueprint": ["blueprint", "construct", "mechanic", "architect", "system", "build"],
+    "ink": ["typograph", "fashion", "photo", "essay", "cultur", "minimal", "editorial"],
+    "grid": ["energy", "electric", "substation", "dispatch", "network", "graph", "utility"],
+    "neuro": ["neural", "network", "machine learn", "model", "llm", "transformer", "embedding", "token", "attention", "classif"],
+    "registry": ["regulat", "document", "contract", "court", "policy", "compliance", "text", "typo", "error"],
+    "clinic": ["medic", "clinic", "patient", "gene", "dna", "pharma", "hospital"],
+    "ledger": ["financ", "econom", "bank", "budget", "invest", "market", "price", "profit", "revenue"],
+    "forest": ["ecolog", "nature", "forest", "climate", "water", "agri", "soil"],
+    "classroom": ["school", "lesson", "student", "teacher", "course", "lecture", "educat", "class"],
+    "cosmos": ["space", "astronom", "quantum", "star", "rocket", "orbit", "galax"],
+}
+for _p in CATALOG:
+    _p.tags = list(_p.tags) + [t for t in EN_TAGS.get(_p.theme.name, []) if t not in _p.tags]
+
+
+def suggest(text: str, k: int = 3, prefer_dark: bool | None = None, lang: str | None = None) -> list[Palette]:
     """k палитр под тему text с причиной. В выдаче есть и светлая, и тёмная гамма (если k ≥ 2);
     prefer_dark ставит первой гамму нужной светлоты."""
     low = text.lower()
@@ -159,8 +178,10 @@ def suggest(text: str, k: int = 3, prefer_dark: bool | None = None) -> list[Pale
             if m:
                 word = re.match(r"\w+", low[m.start():]).group(0)
                 hits.append(word)
-        q = Palette(p.theme, p.why, p.tags, score=len(set(hits)))
-        q.reason = q.why[0].upper() + q.why[1:] + (f". В теме: {', '.join(dict.fromkeys(hits))}." if hits else ".")
+        from .i18n import tr, ui
+        q = Palette(p.theme, tr(p.why, lang), p.tags, score=len(set(hits)))
+        q.hits = list(dict.fromkeys(hits))
+        q.reason = q.why[0].upper() + q.why[1:] + (f". {ui('topic_words', lang)}: {', '.join(q.hits)}." if hits else ".")
         scored.append(q)
     neutral = {t.name: k for k, t in enumerate((INK, CLASSROOM, BLUEPRINT, GRID))}  # если тема не узнана
     scored.sort(key=lambda p: (-p.score, neutral.get(p.theme.name, 99),

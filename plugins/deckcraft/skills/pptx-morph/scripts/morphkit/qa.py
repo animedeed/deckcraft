@@ -1,9 +1,9 @@
-"""Проверки колоды до показа: «сначала измерь, потом чини».
+"""Проверки презентации до показа: «сначала измерь, потом чини».
 
 lint()          — текст помещается (по метрикам шрифтов-заменителей), кегль, контраст, границы, пары Morph,
                   разнообразие макетов и приёмов, петли, плотность, антишаблоны.
 xsd_check()     — строгая проверка слайдов по ISO/IEC 29500 pml.xsd (mc:AlternateContent -> Fallback).
-render()        — LibreOffice -> PDF -> PNG; contact_sheet() — лист миниатюр всей колоды.
+render()        — LibreOffice -> PDF -> PNG; contact_sheet() — лист миниатюр всей презентации.
 """
 
 from __future__ import annotations
@@ -277,6 +277,34 @@ def lint(slides: list[Slide], theme: Theme, strict: bool = False, profile: DeckP
         moments = len({(round(f.delay, 2), f.start) for f in s.fx})  # слои одного лепестка стартуют вместе
         if moments > 24:
             add("warn", i, f"{moments} отдельных моментов анимации на слайде — дробить на шаги-слайды Morph")
+    # гладкость кривых: длинная грань на изгибе видна как «рубленый» край (отзыв: цветок и бочка с обрезанными углами)
+    for i, objs in enumerate(resolved):
+        for o in objs:
+            if o.kind != "vec" or o.meta.get("texture") or max(o.w, o.h) < 0.6:
+                continue
+            worst = 0.0
+            from .vector import smooth_rings
+            for ring in smooth_rings(o.meta["vec"], o.w, o.h):  # так форма уйдёт в pptx
+                pts = [(x * o.w, y * o.h) for x, y in ring]
+                m = len(pts)
+                if m < 3:
+                    continue
+                L = [math.hypot(pts[(k + 1) % m][0] - pts[k][0], pts[(k + 1) % m][1] - pts[k][1]) for k in range(m)]
+                ang = [math.atan2(pts[(k + 1) % m][1] - pts[k][1], pts[(k + 1) % m][0] - pts[k][0]) for k in range(m)]
+                T = [abs((math.degrees(ang[k] - ang[k - 1]) + 180) % 360 - 180) for k in range(m)]  # поворот в вершине k
+                for k in range(m):
+                    # кусок дискретизованной кривой: 3 грани подряд похожей длины, повороты малые и одного порядка;
+                    # длинные грани многоугольников (куб, изометрия, опоры) и намеренные углы сюда не попадают
+                    seg = L[k]
+                    if not (0.14 < seg < 0.9):
+                        continue
+                    nb = (L[k - 1], L[(k + 1) % m])
+                    tt = (T[k], T[(k + 1) % m])
+                    if all(0.6 < x / seg < 1.6 for x in nb) and all(5 < t < 35 for t in tt) and abs(tt[0] - tt[1]) < 8:
+                        worst = max(worst, seg)
+            if worst > 0.14:
+                add("warn", i, f"{o.name}: грубый контур — грань {worst:.2f}\" на изгибе; больше точек "
+                               "(vector.resample(g, n) с n ≥ 120) или полный контур без ресемпла")
     # пары свободных форм: Morph переливает форму честно при равном числе точек и не больше одной дырки
     for i in range(1, len(resolved)):
         if slides[i].transition != "morph":
@@ -430,7 +458,7 @@ def contact_sheet(pngs: list[Path], out: str | Path, titles: list[str] | None = 
 
 
 def _profile_checks(slides: list[Slide], profile: DeckProfile, add) -> None:
-    """Правила профиля колоды (выводы из записей показа): навигация, режимы текста, скорость, замок стиля, дубли."""
+    """Правила профиля презентации (выводы из записей показа): навигация, режимы текста, скорость, замок стиля, дубли."""
     for i, s in enumerate(slides):
         if s.auto is not None and not profile.allow_auto:
             add("error", i, "служебный автослайд: при листании назад показ снова уводит вперёд — рост из нуля "
@@ -451,11 +479,11 @@ def _profile_checks(slides: list[Slide], profile: DeckProfile, add) -> None:
                 if b in tech:
                     add("error", i, f"приём «{s.technique}» отвергнут профилем (см. techniques.md, «Отвергнутые»)")
             if profile.allowed_techniques and not any(a in tech for a in profile.allowed_techniques):
-                add("error", i, f"приём «{s.technique}» не входит в профиль колоды — замок стиля")
+                add("error", i, f"приём «{s.technique}» не входит в профиль презентации — замок стиля")
         if profile.allowed_layouts and s.layout and s.layout not in profile.allowed_layouts:
-            add("error", i, f"макет «{s.layout}» не входит в профиль колоды — новый стиль посреди колоды")
+            add("error", i, f"макет «{s.layout}» не входит в профиль презентации — новый стиль посреди презентации")
         if s.bg not in profile.backgrounds:
-            add("error", i, f"фон «{s.bg}» не входит в профиль ({', '.join(profile.backgrounds)}) — смена стиля посреди колоды")
+            add("error", i, f"фон «{s.bg}» не входит в профиль ({', '.join(profile.backgrounds)}) — смена стиля посреди презентации")
         seen = {}
         for o in texts:
             t = " ".join(plain(l) for l in o.lines).strip().lower()

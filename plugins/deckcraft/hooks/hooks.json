@@ -1,0 +1,13 @@
+{
+  "description": "deckcraft: раз в сутки проверяет, вышла ли новая версия, и предлагает обновить сейчас или позже",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          { "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/update_check.py\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

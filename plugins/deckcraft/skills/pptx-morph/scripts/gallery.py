@@ -3,7 +3,7 @@
     python gallery.py OUT_DIR            # transitions_gallery.pptx и fx_gallery.pptx
     python gallery.py OUT_DIR --check    # + проверка XSD и импорта в LibreOffice
 
-Колоды служат справочником «посмотреть глазами» в PowerPoint и тестом движка: каждый пресет собирается,
+Презентации служат справочником «посмотреть глазами» в PowerPoint и тестом движка: каждый пресет собирается,
 перенацеливается и проходит схему.
 """
 

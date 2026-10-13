@@ -1,112 +1,114 @@
 ---
 name: "pptx-design"
-description: "Дизайн презентаций без кода: бриф и визуальный тезис, палитра по ролям и контраст, типографика с кириллицей, композиция слайда (фокус, масштаб, асимметрия, пустота, нарушение сетки, шапки без однообразия), каталог 32 макетов, ритм колоды (акты, плотность, дыхание, рифма начала и конца, язык движения по разделам), выбор формы для данных и процессов, три стилевых превью, раскадровка и критика, протокол разбора референсов (колоды, видео TikTok/Reels, Pinterest) в рецепты. Использовать вместе с pptx-morph (сборка) для любой колоды, где важно, чтобы она выглядела сделанной дизайнером, а не шаблоном, и когда пользователь присылает примеры, на которые надо равняться."
+description: "Presentation design before code: brief, palette roles and contrast, typography, slide composition, 32 layouts, deck rhythm and structure (one navigation, one section transition, a motion language per section), data forms, storyboard and critique, reference analysis. / Дизайн презентаций без кода: бриф и визуальный тезис, палитра по ролям и контраст, типографика с кириллицей, композиция слайда (фокус, масштаб, асимметрия, пустота, нарушение сетки, шапки без однообразия), каталог 32 макетов, ритм презентации (акты, плотность, дыхание, рифма начала и конца, язык движения по разделам), выбор формы для данных и процессов, три стилевых превью, раскадровка и критика, протокол разбора референсов (презентации, видео TikTok/Reels, Pinterest) в рецепты. Использовать вместе с pptx-morph (сборка) для любой презентации, где важно, чтобы она выглядела сделанной дизайнером, а не шаблоном, и когда пользователь присылает примеры, на которые надо равняться."
 ---
 
-# Дизайн колоды: решения до кода
+# Presentation design: decisions before code
 
-Этот скилл отвечает на вопрос **«как должно выглядеть и двигаться»**. Скилл `pptx-morph` отвечает на вопрос **«как это собрать»**: движок morphkit, Morph, анимации, вектор, проверка. Сначала здесь принимаются решения и пишется раскадровка, потом по ней собирают в pptx-morph.
+This skill answers the question **"how should it look and move"**. The `pptx-morph` skill answers the question **"how to build it"**: the morphkit engine, Morph, animations, vector, QA. Decisions are made and the storyboard is written here first, then the presentation is built from it in pptx-morph.
 
-Главное правило: **каждый слайд — композиция, а не шаблон с подставленным текстом.** Если у всех слайдов одинаковая шапка («метка · заголовок» сверху слева) и меняется только середина, колода выглядит сгенерированной, даже когда в ней хорошие анимации.
+The main rule: **every slide is a composition, not a template with text plugged in.** If all slides share the same header ("label · title" at the top left) and only the middle changes, the presentation looks generated, even when its animations are good.
 
-## 1. Процесс
-1. **Бриф** (`references/design-system.md`, §1): аудитория, цель, плотность, визуальный тезис, мотив, ограничения.
-   - **Палитра** — 2–3 варианта из `pptx-morph` `palette.suggest(тема)` с одной строкой «почему эта гамма» (светлая и тёмная).
-   - **Концепт**: сквозной мотив и его роли по колоде, носитель процесса и цепочка глаголов
-     (`pptx-morph/references/concepts.md`): сложные трансформации идут через всю колоду, а не на одном слайде.
-   - Если тема — тяжёлый процесс (алгоритм, обучение модели, лабораторная): сначала протокол «текст → структура»
-     (там же, §2): носитель, глаголы, кульминация, роли мотива.
-2. **Структура** (`references/structure.md`): одна система навигации, живые контейнеры, парковка за краем,
-   язык движения по разделам, один тип перехода между разделами, роли мотива по слайдам.
-3. **Ритм колоды** (`references/rhythm.md`):
-   - акты и смена плотности;
-   - где «дыхание», где «вау» — один на раздел;
-   - язык движения по разделам;
-   - рифма начала и конца.
-3. **Три стилевых превью** — сборка через `pptx-morph` (`build_previews`). Выбор делает пользователь.
-4. **Раскадровка.** Для каждого слайда: макет (`references/layouts.md`), фокус, что движется, приём Morph (`pptx-morph/references/techniques.md`), что появляется после перехода, петли, смысл заметок. Таблица — `references/rhythm.md`, §6.
-5. **Критика раскадровки** до сборки (чек-лист §5 ниже).
-6. Сборка в `pptx-morph` → рендер → **критика по миниатюрам** (§5) → правки.
-7. Если пользователь прислал примеры — сначала **разбор референсов** (`references/references-protocol.md`), рецепты попадают в раскадровку.
+## 1. Process
+1. **Brief** (`references/design-system.md`, §1): audience, goal, density, visual thesis, motif, constraints.
+   - **Palette** — 2–3 options from `pptx-morph` `palette.suggest(topic)` with one line of "why this scheme" (light and dark).
+   - **Concept**: the recurring motif and its roles across the presentation, the process carrier and the chain of verbs
+     (`pptx-morph/references/concepts.md`): complex transformations run through the whole presentation, not on one slide.
+   - If the topic is a heavy process (an algorithm, model training, a lab exercise): first the "text → structure" protocol
+     (same file, §2): carrier, verbs, climax, motif roles.
+2. **Structure** (`references/structure.md`): one navigation system, live containers, parking off the edge,
+   motion language per section, one transition type between sections, motif roles per slide.
+3. **Presentation rhythm** (`references/rhythm.md`):
+   - acts and density changes;
+   - where the "breath" is, where the "wow" is — one per section;
+   - motion language per section;
+   - rhyme between the beginning and the end.
+3. **Three style previews** — built via `pptx-morph` (`build_previews`). The user makes the choice.
+4. **Storyboard.** For each slide: layout (`references/layouts.md`), focus, what moves, Morph technique (`pptx-morph/references/techniques.md`), what appears after the transition, loops, the meaning of the notes. Table — `references/rhythm.md`, §6.
+5. **Storyboard critique** before the build (checklist §5 below).
+6. Build in `pptx-morph` → render → **critique from thumbnails** (§5) → fixes.
+7. If the user sent examples — first **reference analysis** (`references/references-protocol.md`); the recipes go into the storyboard.
 
-## 2. Композиция: шесть решений на каждый слайд
-Подробно, с приёмами и примерами — `references/composition.md`.
-1. **Фокус.** Одна точка, куда глаз попадает первой: число, схема, слово. Фокус крупнее всего остального минимум в 2–3 раза.
-2. **Иерархия — три уровня, не больше:** фокус → поддержка (заголовок, подписи) → служебное (метка, колонтитул). Каждый уровень отличается размером **и** цветом или насыщенностью.
-3. **Масштаб как средство.** Одно большое число вместо четырёх средних. Схема на 70% слайда вместо иконки в углу.
-4. **Асимметрия и напряжение.** Делить слайд 1/3 + 2/3 или 5 + 7 колонок, а не 50/50. Фокус ставить не в центр, а на линии третей. Центровка — только для заявлений и финала.
-5. **Пустота работает.** 30–45% площади пусто, поля ≥ 0,65″. Пустое место у фокуса, а не равномерно размазанное.
-6. **Сетка и её нарушение.** Всё стоит на 12 колонках. Один элемент на слайд может нарушать сетку: вылет за край, гигантский номер, диагональ. Только один и намеренно.
+## 2. Composition: six decisions for every slide
+In detail, with techniques and examples — `references/composition.md`.
+1. **Focus.** One point the eye lands on first: a number, a diagram, a word. The focus is at least 2–3 times larger than everything else.
+2. **Hierarchy — three levels, no more:** focus → support (title, captions) → auxiliary (label, footer). Each level differs in size **and** in color or saturation.
+3. **Scale as a tool.** One big number instead of four medium ones. A diagram over 70% of the slide instead of an icon in the corner.
+4. **Asymmetry and tension.** Split the slide 1/3 + 2/3 or 5 + 7 columns, not 50/50. Put the focus on the lines of thirds, not in the center. Centering — only for statements and the finale.
+5. **Empty space works.** 30–45% of the area is empty, margins ≥ 0.65″. Empty space next to the focus, not smeared evenly.
+6. **The grid and breaking it.** Everything sits on 12 columns. One element per slide may break the grid: a bleed off the edge, a giant number, a diagonal. Only one, and on purpose.
 
-## 3. Шапки без однообразия
-Системы шапок (`references/composition.md`, §6) чередуются по смыслу слайда:
-- **A. Метка + заголовок сверху слева** — только для слайдов-«документов» (таблица, код).
-- **B. Заголовок внутри композиции** — подпись к схеме, вывод под числом.
-- **C. Боковая колонка** — шапка справа или слева, схема на всю высоту.
-- **D. Номер раздела как фактура** — огромная полупрозрачная цифра, заголовок рядом.
-- **E. Без шапки** — слайд-заявление, число-герой, полноэкранная схема; контекст даёт сквозной якорь (цвет, прогресс).
-- **F. Хлебные крошки** — путь «Проект А › П3 › разбиение» мелко внизу, только на навигационных слайдах.
+## 3. Headers without monotony
+Header systems (`references/composition.md`, §6) alternate according to the meaning of the slide:
+- **A. Label + title at the top left** — only for "document" slides (table, code).
+- **B. Title inside the composition** — a caption to a diagram, a conclusion under a number.
+- **C. Side column** — header on the right or left, diagram at full height.
+- **D. Section number as texture** — a huge semi-transparent digit, title next to it.
+- **E. No header** — a statement slide, a hero number, a full-screen diagram; context comes from a recurring anchor (color, progress).
+- **F. Breadcrumbs** — the path "Project A › P3 › split" in small type at the bottom, only on navigation slides.
 
-Правила:
-- Контекст «Проект А · практика N» пишется на титуле, на слайдах разделов и в колонтитуле, но **не** меткой над каждым заголовком. Внутри раздела контекст держат якоря: цвет раздела, номер в углу, прогресс-точки.
-- Одна система шапки — не больше 3 слайдов подряд.
-- Заголовок-вывод вместо заголовка-темы: «Сеть ошибается на 0,54 балла», а не «Результаты».
+Rules:
+- The context "Project A · practice N" is written on the title slide, on section slides and in the footer, but **not** as a label above every title. Inside a section the context is held by anchors: section color, number in the corner, progress dots.
+- One header system — no more than 3 slides in a row.
+- A conclusion title instead of a topic title: "The network is off by 0.54 points", not "Results".
 
-## 4. Ритм колоды (кратко; подробно — `references/rhythm.md`)
-- Колода — это **акты**: завязка → проблема → метод → доказательства → вывод. У каждого акта свой язык движения и, при желании, свой оттенок.
-- Плотность чередуется: плотный слайд → «вдох» (одно число или фраза) → плотный. Три плотных подряд — потеря зрителя.
-- В разделе **один «вау»-приём** (колесо, матрёшка, разлёт, изометрия), остальное — спокойный Morph. «Вау» на каждом слайде обесценивается.
-- Начало и конец рифмуются: тот же мир или схема, финал подсвечивает результат.
+## 4. Presentation rhythm (brief; in detail — `references/rhythm.md`)
+- A presentation consists of **acts**: setup → problem → method → evidence → conclusion. Each act has its own motion language and, optionally, its own tint.
+- Density alternates: dense slide → "inhale" (one number or phrase) → dense. Three dense slides in a row lose the viewer.
+- A section has **one "wow" technique** (wheel, matryoshka, scatter, isometry); the rest is calm Morph. A "wow" on every slide loses its value.
+- The beginning and the end rhyme: the same world or diagram, the finale highlights the result.
 
-## 5. Критика: чек-лист перед показом
-Смотри лист миниатюр (`pptx-morph`: `render` → `contact_sheet`) как незнакомый зритель.
+## 5. Critique: checklist before showing
+Look at the contact sheet (`pptx-morph`: `render` → `contact_sheet`) as an unfamiliar viewer.
 
-**Слайд:**
-- [ ] Фокус виден за 1 секунду и он один.
-- [ ] Иерархия: три уровня, служебное не спорит с главным.
-- [ ] Шапка не повторяет предыдущие 3 слайда; заголовок — вывод.
-- [ ] Асимметрия или осознанная центровка; пустота у фокуса.
-- [ ] Ничего не касается краёв случайно; вылет — один и намеренный.
-- [ ] Цвет: доминанта, один акцент, статусы только для статусов.
-- [ ] Текст ≤ лимита режима; не помещается — два слайда.
+**Slide:**
+- [ ] The focus is visible within 1 second, and there is only one.
+- [ ] Hierarchy: three levels, auxiliary elements do not compete with the main one.
+- [ ] The header does not repeat the previous 3 slides; the title is a conclusion.
+- [ ] Asymmetry or deliberate centering; empty space next to the focus.
+- [ ] Nothing touches the edges by accident; a bleed is single and intentional.
+- [ ] Color: a dominant, one accent, status colors only for statuses.
+- [ ] Text ≤ the mode's limit; if it does not fit — two slides.
 
-**Колода:**
-- [ ] ≥ 6 разных макетов на 8 сцен.
-- [ ] Смена плотности и дыхание.
-- [ ] Один «вау» на раздел.
-- [ ] Начало и конец рифмуются.
+**Presentation:**
+- [ ] ≥ 6 different layouts per 8 scenes.
+- [ ] Density changes and breathing room.
+- [ ] One "wow" per section.
+- [ ] The beginning and the end rhyme.
 
-**Движение:**
-- [ ] У каждого перехода есть смысл: «что сохраняется, что меняется».
-- [ ] Нет одинаковых приёмов подряд (кроме серий).
-- [ ] Петли только у процессов.
+**Motion:**
+- [ ] Every transition has a meaning: "what is preserved, what changes".
+- [ ] No identical techniques in a row (except series).
+- [ ] Loops only on processes.
 
-**Антишаблоны** (`references/design-system.md`, §6): черта под заголовком, полосы во всю ширину, цветной край у карточки, эмодзи, «иконка в кружке», градиент «фиолетовый по белому», тени без смысла.
+**Anti-patterns** (`references/design-system.md`, §6): a rule under the title, full-width bands, a colored edge on a card, emoji, "icon in a circle", a "purple on white" gradient, shadows without meaning.
 
-## 6. Референсы пользователя
-Пользователь может положить примеры (колоды .pptx, видео, скриншоты) в ветку `design-refs`, папку `refs/`:
+## 6. The user's references
+The user can put examples (.pptx presentations, videos, screenshots) in the `design-refs` branch, folder `refs/`:
 ```
 git fetch origin design-refs && git ls-tree -r --name-only origin/design-refs refs/
-git checkout origin/design-refs -- refs/          # или git show origin/design-refs:refs/<файл> > <путь>
+git checkout origin/design-refs -- refs/          # or git show origin/design-refs:refs/<file> > <path>
 ```
-Разбор — по протоколу `references/references-protocol.md`:
-1. Кадры видео — `pptx-morph/scripts/refs_frames.py`.
-2. Устройство колоды — `pptx-morph/scripts/refs_deck.py`.
-3. Рецепт-карточка.
-4. Воспроизведение в morphkit.
-5. Запись в каталог приёмов.
+Analysis follows the protocol in `references/references-protocol.md`:
+1. Video frames — `pptx-morph/scripts/refs_frames.py`.
+2. Presentation structure — `pptx-morph/scripts/refs_deck.py`.
+3. Recipe card.
+4. Reproduction in morphkit.
+5. Entry in the technique catalog.
 
-Учимся приёмам, а не копируем чужие картинки, логотипы и тексты.
+We learn techniques; we do not copy other people's images, logos and texts.
 
-## Справочники
-| Файл | Когда читать |
+## References
+| File | When to read |
 |---|---|
-| `references/design-system.md` | бриф (шаблон), палитра по ролям, контраст, шрифты с кириллицей, сетка, плотность, антишаблоны |
-| `references/structure.md` | структура колоды: навигация (меню, метка + счётчик, карта доклада → шапка, мотив-указатель), живые контейнеры и парковка, сочетание стиля и движения, где применять сложные формы |
-| `references/composition.md` | фокус, иерархия, масштаб, асимметрия, пустота, сетка и её нарушение, пути чтения, системы шапок, приёмы «журнальной» вёрстки |
-| `references/layouts.md` | 32 макета: где фокус, членение сетки, какие приёмы Morph подходят, плотность |
-| `references/layouts-basic.md` | 16 базовых архетипов с координатами (из pptx-morph v2) |
-| `references/rhythm.md` | акты, плотность, дыхание, «вау» по разделам, язык движения, длительности, раскадровка |
-| `references/infographics.md` | какую форму выбрать для числа, доли, сравнения, распределения, потока, цикла, иерархии |
-| `references/references-protocol.md` | разбор присланных колод и видео в рецепты |
-| `references/sources.md` | изученные источники и что из каждого взято |
+| `references/design-system.md` | brief (template), palette by roles, contrast, fonts with Cyrillic, grid, density, anti-patterns |
+| `references/structure.md` | presentation structure: navigation (menu, label + counter, talk map → header, pointer motif), live containers and parking, combining style and motion, where to use complex shapes |
+| `references/composition.md` | focus, hierarchy, scale, asymmetry, empty space, grid and breaking it, reading paths, header systems, "magazine" layout techniques |
+| `references/layouts.md` | 32 layouts: where the focus is, grid division, which Morph techniques fit, density |
+| `references/layouts-basic.md` | 16 basic archetypes with coordinates (from pptx-morph v2) |
+| `references/rhythm.md` | acts, density, breathing, "wow" per section, motion language, durations, storyboard |
+| `references/infographics.md` | which form to choose for a number, a share, a comparison, a distribution, a flow, a cycle, a hierarchy |
+| `references/references-protocol.md` | analysis of submitted presentations and videos into recipes |
+| `references/sources.md` | studied sources and what was taken from each |
+
+_Russian original: SKILL.ru.md_
