@@ -427,8 +427,10 @@ def _soffice() -> list[str]:
 def render(pptx: str | Path, out_dir: str | Path, dpi: int = 60) -> list[Path]:
     pptx, out_dir = Path(pptx), Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    subprocess.run(_soffice() + ["--headless", "--convert-to", "pdf", "--outdir", str(out_dir), str(pptx)],
-                   capture_output=True, check=True)
+    import tempfile
+    with tempfile.TemporaryDirectory(prefix="morphkit_lo_") as prof:  # свой профиль: рендеры можно запускать параллельно
+        subprocess.run(_soffice() + [f"-env:UserInstallation=file://{prof}", "--headless", "--convert-to", "pdf",
+                                     "--outdir", str(out_dir), str(pptx)], capture_output=True, check=True)
     pdf = out_dir / (pptx.stem + ".pdf")
     prefix = out_dir / pptx.stem
     for old in out_dir.glob(pptx.stem + "-*.png"):
