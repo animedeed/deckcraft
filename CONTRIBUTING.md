@@ -29,7 +29,7 @@
 
 ### Нужна помощь: 3D-модели
 Встроенные 3D-модели PowerPoint (.glb) — в разработке, прототип вне репозитория. Нужны люди с PowerPoint 365,
-которые знают `am3d` (камера, кадр, поворот) или делают 3D-модели. Подробности и обсуждение — в issue про 3D.
+которые знают `am3d` (камера, кадр, поворот) или делают 3D-модели. Подробности и обсуждение — в [issue #1](https://github.com/animedeed/deckcraft/issues/1).
 
 ### Правила
 - Презентации собираются из описания сцен (`O`, `Slide`), XML руками не правится.
@@ -66,8 +66,8 @@
 
 ### Help wanted: 3D models
 PowerPoint's built-in 3D models (.glb) are in progress, with a prototype outside the repository. We need people
-with PowerPoint 365 who know `am3d` (camera, viewport, rotation) or make 3D models. Details and discussion are in the
-3D issue.
+with PowerPoint 365 who know `am3d` (camera, viewport, rotation) or make 3D models. Details and discussion are in
+[issue #1](https://github.com/animedeed/deckcraft/issues/1).
 
 ### Rules
 - Decks are built from scene descriptions (`O`, `Slide`); no hand-edited XML.
