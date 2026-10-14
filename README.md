@@ -83,6 +83,14 @@ LibreOffice не проигрывает Morph. Плавные переходы, 
 3D смотрите в PowerPoint 2019+ или 365. PowerPoint 2016 только воспроизводит Morph, более старые показывают
 затухание.
 
+### 3D-модели (.glb) — в разработке, нужна помощь
+Есть прототип (пока не в этом репозитории): плагин сам строит модели `.glb` (бокал, бочка, цветок, машина),
+вставляет их в слайд как настоящие 3D-объекты PowerPoint с запасной картинкой и поворачивает «Трансформацией»,
+умеет делить модель на части. Не получается довести без PowerPoint 365 под рукой: совпадение 2D-контуров с 3D-рамкой
+(камера, масштаб, порядок поворотов), детализация моделей. Если вы работали со встроенным 3D в PowerPoint
+(`am3d:model3d`, камеры, `objViewport`/`winViewport`) или делаете хорошие 3D-модели — откликнитесь в
+[issue про 3D](../../issues?q=is%3Aissue+3D). Самостоятельно эта часть вряд ли будет закончена.
+
 ### Участие
 Идеи и ошибки — в [Issues](../../issues), правки — через Pull Request. Как добавить свой мотив, палитру или
 приём — в [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -166,6 +174,14 @@ Enable auto-update.
 ### Check in PowerPoint
 LibreOffice does not play Morph. Check smooth transitions, freeform morphing, layer order during a transition and
 3D in PowerPoint 2019+ or 365. PowerPoint 2016 only plays Morph; older versions show a fade.
+
+### 3D models (.glb) — in progress, help wanted
+There is a prototype (not in this repository yet): the plugin builds `.glb` models itself (a glass, a barrel, a
+flower, a car), embeds them as native PowerPoint 3D objects with a fallback picture, turns them with Morph and can
+split a model into parts. It can't be finished without PowerPoint 365 at hand: matching 2D outlines to the 3D frame
+(camera, scale, rotation order) and model detail. If you have worked with PowerPoint's built-in 3D (`am3d:model3d`,
+cameras, `objViewport`/`winViewport`) or make good 3D models, please join the [3D issue](../../issues?q=is%3Aissue+3D).
+This part is unlikely to be finished by the maintainer alone.
 
 ### Contributing
 Ideas and bugs go to [Issues](../../issues), changes come as Pull Requests. See

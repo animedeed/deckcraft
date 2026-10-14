@@ -27,6 +27,10 @@
 | Приём Morph | `references/techniques.md` + помощник в `recipes.py` | — |
 | Правило дизайна | `skills/pptx-design/references/*.md` | — |
 
+### Нужна помощь: 3D-модели
+Встроенные 3D-модели PowerPoint (.glb) — в разработке, прототип вне репозитория. Нужны люди с PowerPoint 365,
+которые знают `am3d` (камера, кадр, поворот) или делают 3D-модели. Подробности и обсуждение — в issue про 3D.
+
 ### Правила
 - Презентации собираются из описания сцен (`O`, `Slide`), XML руками не правится.
 - Тексты проходят `fit_text`; `lint` — 0 ошибок, `motion_lint` — 0.
@@ -59,6 +63,11 @@
 | Palette | `morphkit/palette.py` → `CATALOG` (theme, reason, tags) | automatic; `check_catalog()` checks contrast |
 | Morph technique | `references/techniques.md` + a helper in `recipes.py` | — |
 | Design rule | `skills/pptx-design/references/*.md` | — |
+
+### Help wanted: 3D models
+PowerPoint's built-in 3D models (.glb) are in progress, with a prototype outside the repository. We need people
+with PowerPoint 365 who know `am3d` (camera, viewport, rotation) or make 3D models. Details and discussion are in the
+3D issue.
 
 ### Rules
 - Decks are built from scene descriptions (`O`, `Slide`); no hand-edited XML.
