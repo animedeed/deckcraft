@@ -40,8 +40,23 @@ jobs:
       - name: Demo deck builds from scratch (lint, motion lint, effects)
         working-directory: plugins/deckcraft/skills/pptx-morph/scripts
         run: python examples/demo_deck.py "$RUNNER_TEMP/demo" --no-render
+      - name: Web modules parse (node)
+        working-directory: plugins/deckcraft/skills/pptx-morph/scripts/morphkit/web
+        run: for f in *.js; do node -e "new Function(require('fs').readFileSync('$f','utf8'))" || exit 1; done
+      - name: Playwright (Chromium) for the web checks
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Web demo builds in both languages, 0 console errors, .pptx twin passes lint and XSD
+        working-directory: plugins/deckcraft/skills/pptx-morph/scripts
+        run: |
+          python examples/demo_web.py "$RUNNER_TEMP/web_en" --lang en --shots
+          python examples/demo_web.py "$RUNNER_TEMP/web_ru" --lang ru --shots
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: demo-deck
-          path: ${{ runner.temp }}/demo/
+          path: |
+            ${{ runner.temp }}/demo/
+            ${{ runner.temp }}/web_en/*.html
+            ${{ runner.temp }}/web_en/shots/sheet.png

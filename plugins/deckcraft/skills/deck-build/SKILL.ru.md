@@ -1,6 +1,6 @@
 ---
 name: deck-build
-description: "Builds a .pptx with Morph from the brief: a morphkit generator (motif in roles, navigation, motion language per section, process loops) plus full QA — lint, motion check, XSD, effects import, render and thumbnails, GIFs of key transitions; several variants and a comparison page. English or Russian. / Сборка .pptx с Morph по brief.json и раскадровке из /deck-brief: генератор презентации на morphkit (мотив в ролях, навигация, язык движения раздела, петли процессов), затем полная проверка с замерами — lint, проверка движения (ничего не пролетает по тексту), XSD, распознавание эффектов, рендер и лист миниатюр, GIF ключевых переходов. Итог — .pptx, отчёт и список того, что посмотреть в PowerPoint."
+description: "Builds a .pptx with Morph (and/or one interactive HTML file with the same slides) from the brief: a morphkit generator (motif in roles, navigation, motion language per section, process loops) plus full QA — lint, motion check, XSD, effects import, render and thumbnails, GIFs of key transitions; several variants and a comparison page. English or Russian. / Сборка .pptx с Morph (и/или интерактивной HTML-презентации из тех же слайдов) по brief.json и раскадровке из /deck-brief: генератор презентации на morphkit (мотив в ролях, навигация, язык движения раздела, петли процессов), затем полная проверка с замерами — lint, проверка движения (ничего не пролетает по тексту), XSD, распознавание эффектов, рендер и лист миниатюр, GIF ключевых переходов. Итог — .pptx, отчёт и список того, что посмотреть в PowerPoint."
 argument-hint: "[brief.json]"
 ---
 
@@ -49,6 +49,14 @@ argument-hint: "[brief.json]"
   `compare`/`choice`: `best` (A/B/C или "mix"), `from` (ось → вариант), `result` (итоговые палитра, навигация,
   мотив, переходы), `notes`. Итоговая презентация — генератор с `result`, затем §2–3.
 
+## 1в. HTML (`format` = html или both)
+Тот же генератор: слайды → `morphkit.html.export_html(slides, theme, out/deck.html, sections=…, ui={"menu": …,
+"hud": True}, lang=lang)`, `.pptx`-двойник — `build_pptx(for_pptx(slides), …)`. Web-слой поверх слайдов
+(`web(slide, …)`): у каждого раздела свой вход заголовка; метрики — ссылки на слайды-доказательства с «назад»;
+переключатели (`link set` + `alt`/`when`) там, где есть сравнение; живые сцены (`liquid`, `particles`, `signal`,
+`gauge`…) — где процесс; пометки `morphkit.draw` (обвести, стрелка, рукопись) — на коде и таблицах. Справочник —
+`../pptx-morph/references/web.ru.md`, пример — `../pptx-morph/scripts/examples/demo_web.py`.
+
 ## 2. Проверка (всё до показа пользователю)
 ```
 issues = lint(slides, theme, profile=prof)           # 0 ошибок
@@ -58,11 +66,14 @@ xsd_check(r["path"])                                  # 0
 lo_effects_check(r["path"])["ok"]                     # True
 pngs = render(r["path"], out_dir); contact_sheet(pngs, sheet)
 morphkit.motion.preview(slides, theme, out_dir/"motion", which=[ключевые переходы])
+# HTML: снимки всех слайдов и ошибки консоли (0), разнообразие движения
+r = morphkit.webdemo.shots(html, out_dir/"web", times=[.5, 3.5]); assert not r["errors"]
+morphkit.variety.report(slides)["deck"]              # still_transitions ≤ 0,35, глаголов на слайд ≥ 3
 ```
 Посмотри лист миниатюр и ленты движения сам (чек-лист `../pptx-design/SKILL.md` §5). Нашёл проблему — найди
 причину замером и правь генератор; перепроверь. Не больше трёх кругов: потом покажи как есть и назови остаток.
 
 ## 3. Ответ
-.pptx (SendUserFile, attach), лист миниатюр и 1–3 GIF ключевых переходов (render). Коротко: какие приёмы на каких
+.pptx (SendUserFile, attach), HTML (SendUserFile, display "render") — если собирался, лист миниатюр и 1–3 GIF ключевых переходов (render). Коротко: какие приёмы на каких
 переходах, где петли, что LibreOffice не проверяет (Morph свободных форм, z-порядок в переходе, 3D) —
 попроси прогнать показ в PowerPoint 2019+/365. Закоммить генератор и бриф.

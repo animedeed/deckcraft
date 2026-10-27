@@ -3,3 +3,4 @@ lxml>=5.0
 Pillow>=10.0
 numpy>=1.26
 shapely>=2.0
+# web checks (HTML snapshots, console errors) — optional: playwright, then `python -m playwright install chromium`

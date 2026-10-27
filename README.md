@@ -2,10 +2,10 @@
 
 **[Русский](#русский) · [English](#english)**
 
-Плагин Claude Code для презентаций PowerPoint с переходом «Трансформация» (Morph): от брифа с опросом до
-готового .pptx с проверкой движения.
-A Claude Code plugin for PowerPoint decks with Morph transitions: from a brief with a visual survey to a
-finished .pptx with motion checks.
+Плагин Claude Code для презентаций PowerPoint с переходом «Трансформация» (Morph) и интерактивных
+HTML-презентаций из тех же слайдов: от брифа с опросом до готового .pptx и/или одного HTML-файла с проверкой движения.
+A Claude Code plugin for PowerPoint decks with Morph transitions and interactive HTML presentations built from the
+same slides: from a brief with a visual survey to a finished .pptx and/or one HTML file, with motion checks.
 
 <p align="center"><img src="docs/media/layers.gif" width="640" alt="Демо: фраза превращается во входы сети, волна по слоям, нейрон раскрывается"></p>
 
@@ -51,6 +51,8 @@ claude plugin install document-skills@anthropic-agent-skills
 - **12 палитр** с причиной выбора, **лаборатория форм** (~300 вариантов движения в 25 семействах).
 - Скилл **pptx-design**: композиция слайда, ритм презентации, структура (одна навигация, один тип перехода между
   разделами, свой язык движения у раздела).
+- **Web-движок (0.3.0)**: те же слайды — в один HTML-файл без зависимостей с настоящим Morph, 81 эффектом, живыми
+  сценами, листами-переходами, элементами рисования, кнопками и окном докладчика; `.pptx`-двойник — из тех же слайдов.
 
 ### Пример
 `plugins/deckcraft/skills/pptx-morph/scripts/examples/demo_deck.py` — презентация «Как нейросеть находит опечатку»
@@ -70,6 +72,21 @@ claude plugin install document-skills@anthropic-agent-skills
 сборка итога из частей.
 <p align="center"><img src="docs/media/compare_page.png" width="760" alt="Сравнение вариантов A, B, C"></p>
 
+### Web-презентации (HTML) — новое в 0.3.0
+`/deck-brief` спрашивает формат: PowerPoint, интерактивный HTML или оба. HTML — один файл, открывается в любом
+браузере: меню и числа — кнопки (метрика ведёт на слайд-доказательство, Backspace — назад), переключатели состояний
+(столбики переезжают пружиной), пометки от руки (обвести, стрелка, рукопись, печать), живые сцены (жидкость,
+частицы, сигнал по сети, прибор, терминал), 19 листов-переходов, обзор (O), окно докладчика с таймером (P), перо (D),
+печать в PDF. Интерфейс показа — на языке презентации (RU/EN).
+```bash
+python examples/demo_web.py OUT --lang ru --shots      # из plugins/deckcraft/skills/pptx-morph/scripts
+```
+<p align="center"><img src="docs/media/web.gif" width="720" alt="Web-демо: кнопки переключают состояние, пометки рисуются от руки"></p>
+<p align="center"><img src="docs/media/web_sheet.png" width="860" alt="Миниатюры web-демо"></p>
+
+Справочник — `plugins/deckcraft/skills/pptx-morph/references/web.ru.md`; для проверок нужен Playwright
+(`pip install playwright && playwright install chromium`).
+
 ### Обновление
 Плагин обновляется, когда в репозитории повышается версия в `plugin.json`:
 ```bash
@@ -77,6 +94,9 @@ claude plugin update deckcraft@deckcraft      # затем /reload-plugins в о
 ```
 Автообновление для сторонних маркетплейсов по умолчанию выключено. Включается так: `/plugin` → вкладка
 Marketplaces → `deckcraft` → Enable auto-update.
+
+**Claude Cowork (приложение):** Customize → Plugins → маркетплейс `deckcraft` → Update. Если версия не сменилась —
+удалите плагин и установите заново из того же маркетплейса, затем полностью перезапустите приложение.
 
 ### Что проверить в PowerPoint
 LibreOffice не проигрывает Morph. Плавные переходы, перелив свободных форм, порядок слоёв во время перехода и
@@ -142,6 +162,8 @@ You may need the plugin prefix: `/deckcraft:deck-brief`.
 - **12 palettes** with reasons and a **form lab** (~300 motion variants in 25 families).
 - The **pptx-design** skill: slide composition, deck rhythm, deck structure (one navigation system, one section
   transition, a motion language per section).
+- **Web engine (0.3.0)**: the same slides as one self-contained HTML file with real Morph, 81 effects, live scenes,
+  sheet transitions, drawn elements, buttons and a presenter view; the `.pptx` twin comes from the same slides.
 
 ### Example
 <p align="center"><img src="docs/media/en/layers.gif" width="640" alt="Demo: the sentence becomes network inputs, a wave runs through the layers"></p>
@@ -163,6 +185,21 @@ After the variants are built — the compare page: the same moments of each pres
 one or assemble the result from parts.
 <p align="center"><img src="docs/media/en/compare_page.png" width="760" alt="Comparing variants A, B, C"></p>
 
+### Web presentations (HTML) — new in 0.3.0
+`/deck-brief` asks for the format: PowerPoint, interactive HTML or both. The HTML is one file that opens in any
+browser: the menu and the numbers are buttons (a metric leads to its evidence slide, Backspace goes back), state
+switches (bars spring to new heights), hand annotations (circle, arrow, handwriting, stamp), live scenes (liquid,
+particles, a signal through a network, a gauge, a terminal), 19 sheet transitions, overview (O), presenter view with
+a timer (P), pen (D), print to PDF. The presenter UI follows the presentation language (RU/EN).
+```bash
+python examples/demo_web.py OUT --lang en --shots      # from plugins/deckcraft/skills/pptx-morph/scripts
+```
+<p align="center"><img src="docs/media/en/web.gif" width="720" alt="Web demo: buttons switch the state, annotations draw by hand"></p>
+<p align="center"><img src="docs/media/en/web_sheet.png" width="860" alt="Web demo thumbnails"></p>
+
+Reference: `plugins/deckcraft/skills/pptx-morph/references/web.md`; the checks need Playwright
+(`pip install playwright && playwright install chromium`).
+
 ### Updating
 Users get a new version when `version` in `plugin.json` is bumped:
 ```bash
@@ -170,6 +207,9 @@ claude plugin update deckcraft@deckcraft      # then /reload-plugins in a runnin
 ```
 Auto-update is off by default for third-party marketplaces: `/plugin` → Marketplaces → `deckcraft` →
 Enable auto-update.
+
+**Claude Cowork (desktop app):** Customize → Plugins → the `deckcraft` marketplace → Update. If the version does not
+change, uninstall the plugin, install it again from the same marketplace and fully restart the app.
 
 ### Check in PowerPoint
 LibreOffice does not play Morph. Check smooth transitions, freeform morphing, layer order during a transition and

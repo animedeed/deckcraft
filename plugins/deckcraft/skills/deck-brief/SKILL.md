@@ -30,6 +30,8 @@ Show the structure briefly — as a list of sections with each one's takeaway.
 2. **Duration** — 5 / 10 / 15–20 min.
 3. **Audience** — thesis defense / lecture / client / colleagues.
 4. **What to avoid?** (multiSelect) — lots of text / dark background / complex animation / nothing.
+5. **Format** — PowerPoint (.pptx) / interactive HTML (one file: buttons, link jumps, live scenes, presenter view) /
+   both (recommended when the show runs in a browser). Save to brief.json `"format": "pptx" | "html" | "both"`.
 Do not ask what is already known from the request. No answer — use the recommendation.
 
 ## 3. Recommendation

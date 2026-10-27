@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.0 — 2026-10-27
+- **Web presentations**: the same `Slide`/`O` build into one self-contained HTML file (`morphkit.html.export_html`)
+  with real Morph by `!!` names (outlines with different point counts are resampled and aligned), clickable objects
+  (`link`: slide, section, back, set, toggle), object states that spring between variants (`alt`, `when`),
+  click steps, autoState, and the `.pptx` twin from the same slides (`for_pptx`).
+- Modules: **fx.js** — 81 effects (38 entrances, 20 emphases, 23 exits, per-letter, typing, counters, text and number
+  morph); **draw.js / morphkit.draw** — 20 hand-drawn elements in 5 styles (arrows, dimensions, braces, circles,
+  stamps, stickers, title block, gauges, clocks, handwriting, flowcharts); **scenes.js / morphkit.scenes** — 18 live
+  scenes (liquid in a glass, pouring stream, particles up to 6000 at 60 fps, signal through a network, gauge,
+  terminal, confetti …); **sheets.js** — 19 sheet transitions; **ui.js** — menu (top / tabs / title block), overview,
+  presenter view with timer and sync, pen, laser pointer, help, print to PDF, RU/EN interface.
+- `/deck-brief` asks for the format (PowerPoint / HTML / both); `/deck-build` builds and checks the HTML
+  (Playwright snapshots, 0 console errors, `morphkit.variety` monotony report).
+- `examples/demo_web.py` — the demo presentation as an interactive HTML file (RU/EN).
+- Draw module: stamps and handwriting pass lint in the `.pptx` twin; `multiply` inks switch to `screen` on dark slides.
+- Docs: `references/web.md`, module contract `scripts/morphkit/web/CONTRACT.md` (+ Russian originals); update
+  instructions for Claude Cowork.
+
 ## 0.2.1 — 2026-10-13
 - RU/EN switch translates the user's topic, sections and audience too (the brief stores them in both languages:
   `brief_page.py --alt-topic --alt-sections --alt-audience`, `compare_page.py --alt-topic`); topic words in the

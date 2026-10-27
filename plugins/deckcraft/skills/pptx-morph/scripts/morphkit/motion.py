@@ -70,6 +70,12 @@ def _local_polys(o: O, n_ellipse: int = 72) -> list[list[tuple[float, float]]]:
         rings = [pts]
     elif k == "tri":
         rings = [[(x + w / 2, y), (x + w, y + h), (x, y + h)]]
+    elif k == "hex":  # как MSO_SHAPE.HEXAGON: углы слева и справа, срез 25 % ширины
+        d = w * 0.25
+        rings = [[(x + d, y), (x + w - d, y), (x + w, y + h / 2), (x + w - d, y + h), (x + d, y + h), (x, y + h / 2)]]
+    elif k == "pent":  # MSO_SHAPE.PENTAGON — «домик»-стрелка вправо
+        d = min(w, h) * 0.5
+        rings = [[(x, y), (x + w - d, y), (x + w, y + h / 2), (x + w - d, y + h), (x, y + h)]]
     elif k == "chevron":
         d = min(w, h) * 0.5
         rings = [[(x, y), (x + w - d, y), (x + w, y + h / 2), (x + w - d, y + h), (x, y + h), (x + d, y + h / 2)]]

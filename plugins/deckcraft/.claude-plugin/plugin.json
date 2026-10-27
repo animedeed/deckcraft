@@ -1,7 +1,17 @@
 {
   "name": "deckcraft",
-  "version": "0.2.1",
-  "description": "Презентации .pptx с «Трансформацией» (Morph): бриф с опросом и витриной GIF, сборка движком morphkit с проверкой движения, доработка существующих презентаций и дизайн-критика.",
-  "author": { "name": "animedeed" },
-  "keywords": ["pptx", "powerpoint", "morph", "presentation", "design"]
+  "version": "0.3.0",
+  "description": "Презентации .pptx с «Трансформацией» (Morph) и интерактивные HTML-презентации из тех же слайдов: бриф с опросом и витриной GIF, сборка движком morphkit с проверкой движения, доработка существующих презентаций и дизайн-критика.",
+  "author": {
+    "name": "animedeed"
+  },
+  "keywords": [
+    "design",
+    "html",
+    "morph",
+    "powerpoint",
+    "pptx",
+    "presentation",
+    "web"
+  ]
 }

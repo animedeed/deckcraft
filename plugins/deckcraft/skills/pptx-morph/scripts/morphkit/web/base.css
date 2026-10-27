@@ -1,0 +1,14 @@
+/* deckcraft web runtime — базовые стили: сцена, слои, интерактив. Темы добавляют свои файлы *.css. */
+:root { --dc-bg: #101114; --dc-accent: #8e1f33; --dc-ui: rgba(16, 17, 20, .62); --dc-ui-ink: #f4f2ee; }
+html, body { margin: 0; height: 100%; background: var(--dc-bg); overflow: hidden; }
+body { font-family: Calibri, Carlito, 'Segoe UI', Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+#dc-stage { position: fixed; left: 50%; top: 50%; width: 1600px; height: 900px; transform: translate(-50%, -50%) scale(var(--s, 1));
+  transform-origin: 50% 50%; perspective: 2200px; box-shadow: 0 24px 70px rgba(0, 0, 0, .45); overflow: hidden; }
+#dc-stage > svg { position: absolute; inset: 0; display: block; width: 1600px; height: 900px; transform-origin: 50% 50%; backface-visibility: hidden; }
+#dc-stage > svg.dc-snap { pointer-events: none; z-index: 2; }
+.dc-link { cursor: pointer; }
+.dc-link:hover { filter: brightness(1.06) drop-shadow(0 0 6px rgba(0, 0, 0, .18)); }
+.dc-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+.dc-overlay > * { pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: .001s !important; animation-duration: .001s !important; } }
+@media print { html, body { overflow: visible; background: #fff; } #dc-stage { display: none; } }

@@ -108,7 +108,10 @@ def main() -> None:
            + ("; ".join(news) if news else "см. CHANGELOG в github.com/animedeed/deckcraft") + ". "
            "Один раз в этой сессии, до основной работы, спроси пользователя через AskUserQuestion: "
            "«Обновить сейчас» / «Напомнить позже» / «Пропустить эту версию», коротко перечислив новое. "
-           "Сейчас → выполни `claude plugin update deckcraft@deckcraft` и попроси пользователя ввести /reload-plugins. "
+           "Сейчас → в Claude Code выполни `claude plugin update deckcraft@deckcraft` и попроси пользователя ввести "
+           "/reload-plugins; в Claude Cowork (приложение) обновить может только сам пользователь: Customize → Plugins → "
+           "маркетплейс deckcraft → Update; если версия не сменилась — удалить плагин, поставить заново из того же "
+           "маркетплейса и полностью перезапустить приложение. "
            f"Позже → `python3 \"{me}\" --snooze 7`. Пропустить → `python3 \"{me}\" --skip`. "
            "Если пользователь занят другим — не перебивай, спроси в конце ответа.")
     print(json.dumps({"systemMessage": msg,

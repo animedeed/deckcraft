@@ -1,6 +1,6 @@
 ---
 name: "pptx-morph"
-description: "PowerPoint Morph engine (morphkit): world canvas with a camera, 54 Morph techniques, motif roles, process grammar, 12 palettes with reasons, in-slide loops, 198 native animations and 53 transitions, vector shapes and pseudo-3D, QA (lint, XSD, render, motion preview). Used by the deck-* commands. / Сборка .pptx с переходом «Трансформация» (Morph) движком morphkit: мир-холст с камерой, 54 приёма Morph с помощниками (прожектор, поле точек, кольца с заливкой по кругу, листы-документы, мир на фоне, сигнал по линиям, карусель, переворот), сквозной мотив в ролях (обложка, указатель за краем, фон, диаграмма, портал, прогресс), грамматика процесса (носитель через глаголы split/encode/relate/score/flag) и 12 палитр с причиной выбора, профиль презентации с правилами из показов (текст не переливается, без служебных слайдов, быстрые переходы, замок стиля), петли «до конца слайда» (потоки точек, пульс, круги на воде, вращение, мигание), библиотека 198 нативных анимаций PowerPoint и 53 переходов с правилами стыка с Morph, векторная графика (булевы операции над фигурами, лепестки и радиальные сборки, вращение вокруг оси, перелив форм, разлёт фрагментов, градиенты, 3D-поворот и изометрия), компоненты технических презентаций (код, терминал, схемы, таблицы и графики из фигур), стилевые превью, заметки-конспект, проверка с замерами (lint, XSD, рендер) и инструменты разбора референсов. Дизайн-решения (композиция, шапки, макеты, ритм) — в скилле pptx-design; использовать оба для любой презентации с плавными переходами, анимированными процессами и учебными разборами."
+description: "PowerPoint Morph engine (morphkit) with web export (one HTML file: real Morph, 81 effects, live scenes, sheet transitions, drawn elements, buttons, presenter view): world canvas with a camera, 54 Morph techniques, motif roles, process grammar, 12 palettes with reasons, in-slide loops, 198 native animations and 53 transitions, vector shapes and pseudo-3D, QA (lint, XSD, render, motion preview). Used by the deck-* commands. / Сборка .pptx с переходом «Трансформация» (Morph) движком morphkit: мир-холст с камерой, 54 приёма Morph с помощниками (прожектор, поле точек, кольца с заливкой по кругу, листы-документы, мир на фоне, сигнал по линиям, карусель, переворот), сквозной мотив в ролях (обложка, указатель за краем, фон, диаграмма, портал, прогресс), грамматика процесса (носитель через глаголы split/encode/relate/score/flag) и 12 палитр с причиной выбора, профиль презентации с правилами из показов (текст не переливается, без служебных слайдов, быстрые переходы, замок стиля), петли «до конца слайда» (потоки точек, пульс, круги на воде, вращение, мигание), библиотека 198 нативных анимаций PowerPoint и 53 переходов с правилами стыка с Morph, векторная графика (булевы операции над фигурами, лепестки и радиальные сборки, вращение вокруг оси, перелив форм, разлёт фрагментов, градиенты, 3D-поворот и изометрия), компоненты технических презентаций (код, терминал, схемы, таблицы и графики из фигур), стилевые превью, заметки-конспект, проверка с замерами (lint, XSD, рендер) и инструменты разбора референсов. Дизайн-решения (композиция, шапки, макеты, ритм) — в скилле pptx-design; использовать оба для любой презентации с плавными переходами, анимированными процессами и учебными разборами."
 ---
 
 # Presentations with Morph and live diagrams
@@ -255,6 +255,26 @@ d.save("deck_v4.pptx"); print(d.log, d.report())
 6. LibreOffice does not play Morph or loops: ask the user to run the show in PowerPoint 2019+/365.
 7. In the answer, briefly list which techniques are on which transitions and where the loops are.
 
+## 16. Web presentations (HTML) — 0.3.0
+The same `Slide`/`O` build into **one self-contained HTML file**: real Morph by `!!` names (outlines with different
+point counts are resampled and aligned), effects, live scenes, sheet transitions, hand-drawn elements, clickable
+objects and a presenter UI. The `.pptx` twin is built from the same slides with `for_pptx(slides)`.
+```python
+from morphkit.html import web, link, alt, for_pptx, export_html
+web(slide, sec=2, fx=[{"key": "in.stamp", "target": "!!a", "delay": .2}], scenes=[{"k": "liquid", "glass": "!!q0"}])
+link(o, slide=12, tip="details")          # button: slide | section | back | href | set | toggle | step
+alt(o, "split", "rows", {"groups": o.copy(x=5)})   # state: the object springs to the variant on click
+export_html(slides, theme, "deck.html", sections=[...], ui={"menu": "top", "hud": True}, lang="en")
+build_pptx(for_pptx(slides), theme, "deck.pptx")
+```
+- **Rules:** Morph stays the main transition; sheets only at section boundaries and for link jumps. Every section has
+  its own motion language (title entrance, Morph verbs, scenes). Numbers are clickable: a metric links to its evidence
+  slide with a “back” button. Text does not morph unless `meta["morph_text"]` or `text_policy="morph"`.
+- **Checks:** `morphkit.webdemo.shots(html, out)` — Playwright snapshots, 0 console errors; `morphkit.variety.report`
+  — still transitions, verbs per slide, repeated layouts; lint/XSD of the `.pptx` twin.
+- Example: `examples/demo_web.py OUT --lang en --shots`. Full reference: `references/web.md`; module contract:
+  `scripts/morphkit/web/CONTRACT.md`.
+
 ## References
 | File | When to read |
 |---|---|
@@ -265,5 +285,6 @@ d.save("deck_v4.pptx"); print(d.log, d.report())
 | `references/vector.md` | freeforms, boolean operations, frame on the axis, shape morphing, gradients, 3D |
 | `references/techniques.md` | 50 Morph recipes with helpers and the protocol for inventing new ones |
 | `references/components.md` | Kit components API |
+| `references/web.md` | web presentations (HTML): effects, drawing, scenes, sheets, presenter UI, `.pptx` twin |
 
 _Russian original: SKILL.ru.md_
