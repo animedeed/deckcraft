@@ -2,9 +2,9 @@
 
 **[Русский](#русский) · [English](#english)**
 
-Плагин Claude Code для презентаций PowerPoint с переходом «Трансформация» (Morph) и интерактивных
+Плагин для **Claude Code, Codex и ChatGPT Work**: презентации PowerPoint с переходом «Трансформация» (Morph) и интерактивных
 HTML-презентаций из тех же слайдов: от брифа с опросом до готового .pptx и/или одного HTML-файла с проверкой движения.
-A Claude Code plugin for PowerPoint decks with Morph transitions and interactive HTML presentations built from the
+A plugin for **Claude Code, Codex and ChatGPT Work**: PowerPoint decks with Morph transitions and interactive HTML presentations built from the
 same slides: from a brief with a visual survey to a finished .pptx and/or one HTML file, with motion checks.
 
 <p align="center"><img src="docs/media/layers.gif" width="640" alt="Демо: фраза превращается во входы сети, волна по слоям, нейрон раскрывается"></p>
@@ -13,7 +13,29 @@ same slides: from a brief with a visual survey to a finished .pptx and/or one HT
 
 ## Русский
 
-### Установка
+### Codex и ChatGPT Work — новое в 0.3.3
+
+OpenAI-версия находится в `plugins/deckcraft-openai`, исходная версия для Claude — в `plugins/deckcraft`.
+Обе сохраняют morphkit, PowerPoint Morph/native-анимации и интерактивный HTML. В OpenAI-версии бриф позволяет выбрать
+кнопки HTML-панели: заметки, обзор, докладчик, разметка, указка, PDF, навигация, полный экран и справка.
+По умолчанию доступен полный набор; выбор сохраняется в JSON и применяется при сборке.
+
+Установка из GitHub в Codex:
+```bash
+codex plugin marketplace add animedeed/deckcraft --ref main
+codex plugin add deckcraft@deckcraft
+```
+После установки начните новый чат. Движок использует Python 3.10+ в локальном или облачном окружении —
+[настройка и облачный запуск](plugins/deckcraft-openai/RUNTIME.md). Локальные MCP, автоматические hooks и обязательный
+PowerPoint не нужны. Веб-ChatGPT и телефон используют ChatGPT Work с доступным выполнением кода.
+Установка GitHub-marketplace в Codex не устанавливает плагин в аккаунт ChatGPT: для каталога ChatGPT нужен ZIP,
+верификация разработчика и проверка OpenAI ([официальная публикация](https://developers.openai.com/plugins/deploy/submission)).
+Обычный Chat без выполнения кода сборку не запускает. Запуск на реальном телефоне и в веб-аккаунте пока не проверен.
+
+Проверки пакета: структура PPTX, редактируемый текст, RU/EN-сборки, HTML-панель, выбор брифа и PDF в браузере.
+CI повторяет их на Linux, без PowerPoint и Windows.
+
+### Установка в Claude Code
 В терминале:
 ```bash
 claude plugin marketplace add animedeed/deckcraft
@@ -121,7 +143,25 @@ LibreOffice не проигрывает Morph. Плавные переходы, 
 
 ## English
 
-### Install
+### Codex and ChatGPT Work — new in 0.3.3
+
+The OpenAI package is `plugins/deckcraft-openai`; the original Claude package remains in `plugins/deckcraft`.
+It keeps morphkit, native PowerPoint animation/Morph and interactive HTML. The visual brief can select the HTML
+toolbar controls and saves those choices as JSON. Full controls are the default.
+
+```bash
+codex plugin marketplace add animedeed/deckcraft --ref main
+codex plugin add deckcraft@deckcraft
+```
+
+Start a new chat after installing. Python 3.10+ may run in a hosted or local code environment; see
+[runtime and cloud setup](plugins/deckcraft-openai/RUNTIME.md). No local MCP, automatic hooks or PowerPoint build dependency.
+Web and mobile use ChatGPT Work with code execution. Installing this GitHub marketplace in Codex does not install it
+into your ChatGPT account. ChatGPT Directory distribution requires a ZIP, verified identity and OpenAI review
+([submission guide](https://developers.openai.com/plugins/deploy/submission)). Ordinary Chat without code execution cannot build decks.
+Actual web-account and phone execution has not yet been verified. Linux CI checks the portable engine and browser outputs.
+
+### Install in Claude Code
 In a terminal:
 ```bash
 claude plugin marketplace add animedeed/deckcraft

@@ -1,0 +1,20 @@
+{
+  "name": "deckcraft",
+  "interface": {
+    "displayName": "Deckcraft — Codex & ChatGPT Work"
+  },
+  "plugins": [
+    {
+      "name": "deckcraft",
+      "source": {
+        "source": "local",
+        "path": "./plugins/deckcraft-openai"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

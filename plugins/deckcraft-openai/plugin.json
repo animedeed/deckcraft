@@ -1,0 +1,25 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "deckcraft",
+  "version": "0.3.3",
+  "description": "Deckcraft for ChatGPT Work and Codex: PowerPoint Morph and interactive HTML, portable Python engine, visual briefs, configurable tools, remix and review.",
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": false,
+      "hooks": [],
+      "interface": {
+        "displayName": "Deckcraft",
+        "shortDescription": "PowerPoint Morph and HTML for Codex / ChatGPT Work",
+        "developerName": "animedeed",
+        "category": "Productivity",
+        "capabilities": [
+          "Instructions"
+        ],
+        "defaultPrompt": [
+          "Create a presentation with Deckcraft.",
+          "Review my PPTX and HTML presentation."
+        ]
+      }
+    }
+  }
+}

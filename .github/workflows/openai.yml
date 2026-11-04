@@ -1,0 +1,34 @@
+name: OpenAI portable plugin
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check-openai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONUTF8: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python and browser dependencies
+        run: |
+          pip install -r plugins/deckcraft-openai/requirements.txt playwright
+          python -m playwright install --with-deps chromium
+      - name: Runtime diagnostics
+        run: python plugins/deckcraft-openai/scripts/check_environment.py
+      - name: Native content, optional QA, visual choice and toolbar
+        run: python tests/test_openai.py --browser
+      - name: JavaScript syntax
+        run: |
+          for f in plugins/deckcraft-openai/skills/pptx-morph/scripts/morphkit/web/*.js; do
+            node --check "$f"
+          done
+      - name: RU and EN demo builds
+        working-directory: plugins/deckcraft-openai/skills/pptx-morph/scripts
+        run: |
+          python examples/demo_web.py "$RUNNER_TEMP/openai_ru" --lang ru
+          python examples/demo_web.py "$RUNNER_TEMP/openai_en" --lang en

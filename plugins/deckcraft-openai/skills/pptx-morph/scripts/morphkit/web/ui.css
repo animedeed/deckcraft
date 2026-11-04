@@ -1,0 +1,299 @@
+/* deckcraft web — интерфейс показа (ui.css, 0.3.0). Цвета — переменные, которые ui.js берёт из DC.data.colors. */
+:root {
+  --dcu-accent: var(--dc-accent, #8e1f33); --dcu-accent-hi: #c4687a; --dcu-on-accent: #fff;
+  --dcu-ink: #16171b; --dcu-paper: #fbfaf8; --dcu-surface: #f1efea; --dcu-line: #cfc9be; --dcu-muted: #66625b; --dcu-bad: #a3272f;
+  --dcu-glass: var(--dc-ui, rgba(16, 17, 20, .66)); --dcu-glass-ink: var(--dc-ui-ink, #f4f2ee); --dcu-glass-line: rgba(244, 242, 238, .18);
+  --dcu-hover: rgba(255, 255, 255, .13);
+  --dcu-body: Calibri, Carlito, 'Segoe UI', Arial, sans-serif; --dcu-head: var(--dcu-body); --dcu-mono: 'Courier New', 'Liberation Mono', monospace;
+  --dcu-ease: cubic-bezier(.2, .8, .2, 1); --dcu-pop: cubic-bezier(.3, 1.32, .5, 1);
+}
+html.dcu-light { --dcu-glass: rgba(251, 250, 248, .86); --dcu-glass-ink: #16171b; --dcu-glass-line: rgba(22, 23, 27, .14); --dcu-hover: rgba(0, 0, 0, .07) }
+.dcu-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap }
+[hidden].dcu-back, .dcu-v [hidden], .dcu-layer [hidden] { display: none !important }
+
+/* ---------- кнопки ---------- */
+.dcu-b { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-width: 34px; height: 34px; padding: 0 12px; border-radius: 999px; font: 600 13px/1 var(--dcu-body); letter-spacing: .02em;
+  color: inherit; white-space: nowrap; transition: background-color .2s, color .2s, box-shadow .2s }
+.dcu-b:hover { background: var(--dcu-hover) }
+.dcu-b:focus-visible { outline: 2px solid var(--dcu-accent-hi); outline-offset: 2px }
+.dcu-b[aria-pressed="true"] { background: var(--dcu-accent); color: var(--dcu-on-accent) }
+.dcu-b:disabled { opacity: .4; cursor: default }
+.dcu-x { font-size: 22px; font-weight: 400; width: 38px; height: 38px; padding: 0 }
+
+/* сцена — position: fixed: иначе до fit() сцена 1600 px выходит за край, и мобильный браузер расширяет страницу
+   (layout viewport 996 px вместо 390); fixed не участвует в переполнении документа. Для base.css — см. отчёт. */
+#dc-stage { position: fixed }
+
+/* ---------- слой сцены (#dc-overlay): 1600×900, масштабируется вместе со сценой ---------- */
+#dc-overlay > .dcu-layer { position: absolute; inset: 0; pointer-events: none; font-family: var(--dcu-body); color: var(--dcu-ink) }
+.dcu-layer .dcu-i { pointer-events: auto }
+#dc-overlay > .dcu-layer.dcu-dark { color: #f4f2ee }
+
+/* меню «top»: строка разделов, пилюля переезжает */
+.dcu-top { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; padding: 5px; border-radius: 999px;
+  background: rgba(251, 250, 248, .8); border: 1px solid rgba(22, 23, 27, .09); box-shadow: 0 6px 22px rgba(0, 0, 0, .08);
+  backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px); transition: background-color .4s, border-color .4s, color .4s; z-index: 3 }
+.dcu-dark .dcu-top { background: rgba(22, 23, 28, .58); border-color: rgba(255, 255, 255, .12); box-shadow: 0 6px 22px rgba(0, 0, 0, .25) }
+.dcu-pill { position: absolute; left: 0; top: 5px; bottom: 5px; width: 0; border-radius: 999px; background: var(--dcu-accent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .2); transition: transform .6s var(--dcu-pop), width .6s var(--dcu-pop), opacity .3s; z-index: 0 }
+.dcu-pill.dcu-noanim { transition: none }
+.dcu-sec { position: relative; z-index: 1; display: flex; align-items: center; border-radius: 999px; transition: color .35s }
+.dcu-sec.dcu-on { color: var(--dcu-on-accent) }
+.dcu-sec-b { all: unset; cursor: pointer; padding: 9px 6px 9px 15px; font: 700 13px/1 var(--dcu-body); letter-spacing: .1em; text-transform: uppercase; border-radius: 999px; white-space: nowrap }
+.dcu-nodots .dcu-sec-b { padding-right: 15px }
+.dcu-sec-b:hover { opacity: .8 }
+.dcu-sec-b:focus-visible { outline: 2px solid currentColor; outline-offset: -3px }
+.dcu-empty { opacity: .45 }
+.dcu-dots { display: inline-flex; align-items: center; padding-right: 9px }
+.dcu-dot { all: unset; cursor: pointer; width: 13px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50% }
+.dcu-dot::before { content: ''; box-sizing: border-box; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid currentColor; opacity: .55;
+  transition: transform .25s var(--dcu-pop), background-color .25s, opacity .25s }
+.dcu-dot:hover::before { opacity: 1; transform: scale(1.35) }
+.dcu-dot.dcu-cur::before { background: currentColor; opacity: 1; transform: scale(1.35) }
+.dcu-dot:focus-visible { outline: 2px solid currentColor; outline-offset: -4px }
+
+/* меню «tabs»: вкладки справа, как в «Зин» */
+.dcu-tabs { position: absolute; right: 0; top: 70px; display: flex; flex-direction: column; gap: 6px; z-index: 3 }
+.dcu-tab { display: flex; flex-direction: column; align-items: stretch; width: 62px; min-height: 120px; background: var(--tab-bg); color: var(--tab-fg);
+  transform: translateX(18px); transition: transform .4s var(--dcu-pop); box-shadow: -4px 4px 0 rgba(0, 0, 0, .18) }
+.dcu-tab:hover { transform: translateX(8px) }
+.dcu-tab.dcu-on { transform: translateX(-14px) }
+.dcu-tab-b { all: unset; cursor: pointer; flex: 1; writing-mode: vertical-rl; display: flex; align-items: center; justify-content: center; gap: 12px;
+  padding: 16px 18px 16px 0; font: 700 12px/1 var(--dcu-body); letter-spacing: .16em; text-transform: uppercase }
+.dcu-tab-n { opacity: .65; font-variant-numeric: tabular-nums }
+.dcu-tab-t { white-space: nowrap }
+.dcu-tab-b:focus-visible { outline: 3px solid currentColor; outline-offset: -5px }
+.dcu-tab .dcu-dots { display: none; flex-direction: column; padding: 0 18px 10px 0; align-items: center }
+.dcu-tab.dcu-on .dcu-dots { display: flex }
+.dcu-tab .dcu-dot { width: 24px; height: 14px }
+
+/* меню «stamp»: штамп ГОСТ и линейка листов */
+.dcu-m-stamp { --st-line: #16171b; --st-line2: rgba(22, 23, 27, .5); --st-bg: rgba(251, 250, 248, .9) }
+.dcu-m-stamp.dcu-dark { --st-line: #e9f2ff; --st-line2: rgba(233, 242, 255, .6); --st-bg: rgba(10, 30, 70, .55) }
+.dcu-stamp { position: absolute; right: 22px; bottom: 22px; width: 640px; display: grid; grid-template-columns: 70px 90px 1fr 56px 64px 72px;
+  grid-template-rows: repeat(4, 26px) 32px; border: 2.5px solid var(--st-line); background: var(--st-bg); color: var(--st-line);
+  font: 500 12px/1 var(--dcu-mono); z-index: 3; backdrop-filter: blur(4px) }
+.dcu-c { border-right: 1px solid var(--st-line2); border-bottom: 1px solid var(--st-line2); padding: 0 6px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; min-width: 0 }
+.dcu-c.dcu-k { color: var(--st-line2) }
+.dcu-st-ttl { font: italic 700 21px/1.12 var(--dcu-head); white-space: normal; justify-content: center; text-align: center; padding: 6px 10px }
+.dcu-st-big { font: italic 700 22px/1 var(--dcu-head); justify-content: center }
+.dcu-st-code { font: 600 15px/1 var(--dcu-mono) }
+.dcu-st-secs { display: flex; border-top: 1.5px solid var(--st-line) }
+.dcu-st-sec { all: unset; cursor: pointer; flex: 1; min-width: 0; padding: 0 8px; display: flex; align-items: center; gap: 6px; border-right: 1px solid var(--st-line2);
+  font: 600 12px/1 var(--dcu-body); letter-spacing: .04em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; transition: background-color .25s, color .25s }
+.dcu-st-sec:last-child { border-right: 0 }
+.dcu-st-sec b { font: 700 12px/1 var(--dcu-mono) }
+.dcu-st-sec:hover { background: rgba(127, 127, 127, .14) }
+.dcu-st-sec.dcu-on { background: var(--st-line); color: var(--st-bg) }
+.dcu-m-stamp.dcu-dark .dcu-st-sec.dcu-on { color: #0b1d3d }
+.dcu-st-sec:focus-visible { outline: 2px solid var(--dcu-bad); outline-offset: -3px }
+.dcu-ruler { position: absolute; left: 24px; right: 24px; top: 4px; height: 16px; display: flex; z-index: 3 }
+.dcu-ruler .dcu-dot { all: unset; cursor: pointer; flex: 1; position: relative; height: 16px }
+.dcu-ruler .dcu-dot::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--dcu-bad); border: 0; border-radius: 0; opacity: 1; width: auto; transform: none; transition: height .3s var(--dcu-ease) }
+.dcu-ruler .dcu-dot::after { content: ''; position: absolute; left: 0; bottom: 0; width: 1px; height: 6px; background: var(--st-line2) }
+.dcu-ruler .dcu-dot.dcu-maj::after { height: 12px; background: var(--st-line) }
+.dcu-ruler .dcu-dot.dcu-cur::before { height: 4px; transform: none }
+.dcu-ruler .dcu-dot:hover::before { height: 2px; transform: none }
+.dcu-ruler .dcu-dot:focus-visible { outline: 2px solid var(--dcu-bad); outline-offset: 0 }
+
+/* кнопка «вернуться» */
+.dcu-back { all: unset; box-sizing: border-box; position: absolute; left: 22px; top: 18px; z-index: 4; cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
+  max-width: 560px; padding: 10px 18px 10px 12px; border-radius: 999px; background: var(--dcu-accent); color: var(--dcu-on-accent);
+  font: 600 15px/1.1 var(--dcu-body); box-shadow: 0 8px 24px rgba(0, 0, 0, .22), 0 0 0 3px rgba(255, 255, 255, .55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.dcu-back b { font-weight: 700 }
+.dcu-back-a { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(255, 255, 255, .2); font-size: 16px; flex: none; transition: transform .25s var(--dcu-pop) }
+.dcu-back:hover .dcu-back-a { transform: translateX(-3px) }
+.dcu-back:focus-visible { outline: 3px solid var(--dcu-accent-hi); outline-offset: 3px }
+.dcu-back.dcu-pop { animation: dcu-back-in .55s var(--dcu-pop) both }
+.dcu-m-stamp .dcu-back { top: 30px; left: 30px }
+.dcu-m-tabs .dcu-back { top: 22px }
+@keyframes dcu-back-in { from { opacity: 0; transform: translateX(-24px) scale(.94) } to { opacity: 1; transform: none } }
+
+/* подсказка у курсора */
+.dcu-tip { position: absolute; left: 0; top: 0; max-width: 420px; padding: 12px 16px 13px; border-radius: 10px; background: rgba(22, 23, 27, .95); color: #f4f2ee;
+  font: 400 17px/1.38 var(--dcu-body); box-shadow: 0 16px 38px rgba(0, 0, 0, .3); border-left: 4px solid var(--dcu-accent-hi);
+  opacity: 0; transition: opacity .16s var(--dcu-ease); pointer-events: none; z-index: 6; will-change: transform }
+.dcu-tip.dcu-show { opacity: 1 }
+.dcu-tip b { display: block; font-weight: 700; font-size: 18px; margin-bottom: 4px }
+.dcu-tip span { display: block }
+.dcu-tip b + span { color: rgba(244, 242, 238, .86) }
+
+/* подсветка объекта-ссылки */
+.dcu-lhl { position: absolute; left: 0; top: 0; width: 0; height: 0; box-sizing: border-box; border-radius: 12px; border: 2px solid var(--dcu-accent-hi);
+  box-shadow: 0 0 0 5px rgba(142, 31, 51, .12), 0 10px 28px rgba(0, 0, 0, .1); opacity: 0; transition: opacity .18s; pointer-events: none; z-index: 5 }
+.dcu-dark .dcu-lhl { box-shadow: 0 0 0 5px rgba(255, 255, 255, .1), 0 10px 28px rgba(0, 0, 0, .3) }
+.dcu-lhl.dcu-show { opacity: 1 }
+.dcu-lhl-t { position: absolute; left: -2px; top: calc(100% + 8px); padding: 5px 10px; border-radius: 7px; background: var(--dcu-accent); color: var(--dcu-on-accent);
+  font: 700 13px/1.15 var(--dcu-body); white-space: nowrap; box-shadow: 0 6px 16px rgba(0, 0, 0, .2) }
+.dcu-lhl.dcu-up .dcu-lhl-t { top: auto; bottom: calc(100% + 8px) }
+.dcu-lhl.dcu-right .dcu-lhl-t { left: auto; right: -2px }
+#dc-stage .dc-link:focus { outline: none }
+#dc-stage .dc-link:focus-visible { filter: drop-shadow(0 0 2px var(--dcu-accent-hi)) drop-shadow(0 0 7px var(--dcu-accent-hi)) }
+
+/* перо и указка */
+.dcu-ink, .dcu-laser { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; pointer-events: none }
+.dcu-ink { z-index: 2 }
+.dcu-laser { z-index: 9 }
+.dcu-pen-on .dcu-ink { pointer-events: auto; touch-action: none; cursor: crosshair }
+.dcu-pen-on .dcu-ink.dcu-erasing { cursor: cell }
+#dc-stage.dcu-laser-on, #dc-stage.dcu-laser-on * { cursor: none !important }
+.dcu-pentools { position: absolute; left: 18px; top: 50%; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 9px 7px; border-radius: 20px;
+  background: var(--dcu-glass); color: var(--dcu-glass-ink); border: 1px solid var(--dcu-glass-line); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .28); transform: translate(-140%, -50%); visibility: hidden; transition: transform .38s var(--dcu-pop), visibility 0s .38s; z-index: 8 }
+.dcu-pen-on .dcu-pentools { transform: translate(0, -50%); visibility: visible; transition: transform .38s var(--dcu-pop), visibility 0s }
+.dcu-pentools .dcu-b { width: 36px; height: 36px; min-width: 0; padding: 0 }
+.dcu-sw::after { content: ''; width: 22px; height: 22px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 1.5px rgba(127, 127, 127, .55) }
+.dcu-sw[aria-pressed="true"] { background: transparent; box-shadow: 0 0 0 2px var(--dcu-glass-ink) }
+.dcu-sz i { display: block; border-radius: 50%; background: currentColor }
+.dcu-sz[aria-pressed="true"] { background: var(--dcu-hover); color: inherit; box-shadow: inset 0 0 0 1.5px var(--dcu-glass-ink) }
+.dcu-ic svg { width: 20px; height: 20px }
+.dcu-hr { width: 22px; height: 1px; background: var(--dcu-glass-line); margin: 2px 0 }
+
+/* ---------- окно браузера (#dcu) ---------- */
+.dcu-v { position: fixed; inset: 0; pointer-events: none; z-index: 20; font-family: var(--dcu-body) }
+.dcu-prog { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: rgba(127, 127, 127, .16) }
+.dcu-prog > i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--dcu-accent); transition: width .6s var(--dcu-ease); box-shadow: 0 0 8px rgba(0, 0, 0, .15) }
+.dcu-prog > s { position: absolute; top: 0; width: 2px; height: 3px; margin-left: -1px; background: rgba(255, 255, 255, .75); mix-blend-mode: difference }
+
+.dcu-hud { position: absolute; bottom: 12px; right: 14px; display: flex; align-items: center; gap: 1px; padding: 3px; border-radius: 999px; pointer-events: auto; opacity: .9;
+  background: var(--dcu-glass); color: var(--dcu-glass-ink); border: 1px solid var(--dcu-glass-line); backdrop-filter: blur(12px) saturate(1.2); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .25); transition: opacity .35s var(--dcu-ease), transform .35s var(--dcu-ease) }
+.dcu-hud:hover, .dcu-hud:focus-within { opacity: 1 }
+.dcu-hud .dcu-b { height: 30px; min-width: 30px; padding: 0 10px; font-size: 12px }
+.dcu-hud.dcu-left { right: auto; left: 14px }
+.dcu-hud.dcu-center { right: auto; left: 50%; transform: translateX(-50%) }
+.dcu-idle .dcu-hud:not(:hover):not(:focus-within) { opacity: 0; transform: translateY(12px); pointer-events: none }
+.dcu-idle .dcu-hud.dcu-center:not(:hover):not(:focus-within) { transform: translate(-50%, 12px) }
+.dcu-idle #dc-stage, .dcu-idle #dc-stage .dc-link { cursor: none }
+.dcu-hud .dcu-arrow { font-size: 16px; width: 32px; padding: 0 }
+.dcu-hud .dcu-num { font: 600 13px/1 var(--dcu-body); font-variant-numeric: tabular-nums; padding: 0 6px; min-width: 58px; opacity: .92 }
+.dcu-num b { font-size: 15px; font-weight: 800; margin-right: 1px }
+.dcu-steps { display: inline-flex; gap: 3px; margin: 0 2px }
+.dcu-steps i { width: 6px; height: 6px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px currentColor; opacity: .6 }
+.dcu-steps i.dcu-done { background: currentColor; opacity: 1 }
+.dcu-sep { width: 1px; height: 20px; background: var(--dcu-glass-line); margin: 0 4px }
+.dcu-hud .dcu-q { width: 30px; padding: 0; font-size: 14px; font-weight: 800 }
+
+/* заметки-стикер */
+.dcu-notes { position: absolute; left: 50%; bottom: 72px; width: min(940px, calc(100% - 32px)); max-height: 38vh; overflow: auto; box-sizing: border-box; pointer-events: none;
+  transform: translate(-50%, 18px); background: #fff3a0; color: #1c1b22; padding: 18px 22px 20px; font: 400 18px/1.5 var(--dcu-body);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .05), 0 16px 34px rgba(0, 0, 0, .35); opacity: 0; transition: opacity .3s var(--dcu-ease), transform .3s var(--dcu-ease) }
+.dcu-notes.dcu-show { opacity: 1; transform: translate(-50%, 0) rotate(-.6deg); pointer-events: auto }
+.dcu-notes > b { display: block; margin-bottom: 8px; font: 700 12px/1 var(--dcu-body); letter-spacing: .15em; text-transform: uppercase; opacity: .62 }
+.dcu-notes-t { white-space: pre-wrap }
+.dcu-notes-t.dcu-empty, .dcu-pv-notes-t.dcu-empty { opacity: .55; font-style: italic }
+
+/* номер слайда, тосты */
+.dcu-goto, .dcu-toast { position: absolute; left: 50%; top: 26px; transform: translateX(-50%); pointer-events: none; background: var(--dcu-glass); color: var(--dcu-glass-ink);
+  border: 1px solid var(--dcu-glass-line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 14px 34px rgba(0, 0, 0, .3) }
+.dcu-goto { top: 86px; display: grid; grid-template-columns: auto auto; column-gap: 14px; align-items: baseline; padding: 14px 22px 12px; border-radius: 16px; z-index: 3 }
+.dcu-goto span { font: 600 15px/1 var(--dcu-body); opacity: .7 }
+.dcu-goto b { font: 800 40px/1 var(--dcu-body); font-variant-numeric: tabular-nums }
+.dcu-goto em { grid-column: 1 / 3; margin-top: 8px; font: italic 400 15px/1.2 var(--dcu-body) }
+.dcu-goto small { grid-column: 1 / 3; margin-top: 6px; font: 400 12px/1 var(--dcu-body); opacity: .6 }
+.dcu-caret { display: inline-block; width: 3px; height: 32px; margin-left: 3px; vertical-align: -3px; background: currentColor; animation: dcu-blink 1s steps(1) infinite }
+@keyframes dcu-blink { 50% { opacity: 0 } }
+.dcu-toast { top: auto; bottom: 74px; padding: 10px 16px; border-radius: 12px; font: 500 14px/1.3 var(--dcu-body); opacity: 0; transform: translate(-50%, 8px); transition: opacity .25s, transform .25s var(--dcu-ease); z-index: 3 }
+.dcu-toast.dcu-show { opacity: 1; transform: translate(-50%, 0) }
+.dcu-black { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .45s; z-index: 9 }
+.dcu-black.dcu-show { opacity: 1; pointer-events: auto; cursor: none }
+
+/* обзор */
+.dcu-ov { position: absolute; inset: 0; overflow: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 0 40px 56px; pointer-events: auto; z-index: 5;
+  background: rgba(12, 13, 16, .975); color: #f4f2ee; opacity: 0; transform: scale(1.025); transition: opacity .25s var(--dcu-ease), transform .32s var(--dcu-ease) }
+.dcu-ov.dcu-show { opacity: 1; transform: none }
+.dcu-ov-head { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 22px; padding: 22px 0 16px; background: linear-gradient(rgba(12, 13, 16, .98) 72%, rgba(12, 13, 16, 0)) }
+.dcu-ov-title { font: 700 24px/1.1 var(--dcu-head) }
+.dcu-ov-title span { font-weight: 400; opacity: .55 }
+.dcu-ov-hint { flex: 1; font: 400 13px/1.3 var(--dcu-body); opacity: .55 }
+.dcu-ov-sec h3 { display: flex; align-items: center; gap: 12px; margin: 20px 0 14px; font: 700 13px/1 var(--dcu-body); letter-spacing: .14em; text-transform: uppercase; color: rgba(244, 242, 238, .78) }
+.dcu-ov-sec h3 b { color: var(--dcu-accent-hi); font-variant-numeric: tabular-nums }
+.dcu-ov-sec h3::after { content: ''; flex: 1; height: 1px; background: rgba(255, 255, 255, .12) }
+.dcu-ov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: 20px 18px }
+.dcu-th { all: unset; cursor: pointer; display: block; min-width: 0; border-radius: 10px; transition: transform .2s var(--dcu-ease) }
+.dcu-th:hover { transform: translateY(-3px) }
+.dcu-th-img { aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #24252b; box-shadow: 0 8px 22px rgba(0, 0, 0, .4); outline: 2px solid transparent; outline-offset: 3px; transition: outline-color .15s }
+.dcu-th-img svg { display: block; width: 100%; height: 100%; pointer-events: none }
+.dcu-th.dcu-cur .dcu-th-img { outline: 3px solid var(--dcu-accent-hi) }
+.dcu-th.dcu-sel .dcu-th-img, .dcu-th:focus-visible .dcu-th-img { outline: 3px solid #f4f2ee }
+.dcu-th:focus { outline: none }
+.dcu-th-cap { display: flex; gap: 8px; align-items: baseline; margin-top: 9px; font: 400 14px/1.25 var(--dcu-body); color: rgba(244, 242, 238, .86) }
+.dcu-th-cap b { color: var(--dcu-accent-hi); font-weight: 700; font-variant-numeric: tabular-nums }
+.dcu-th-cap span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.dcu-th.dcu-sel .dcu-th-cap { color: #fff }
+
+/* справка */
+.dcu-help { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(10, 10, 14, .55); pointer-events: auto; z-index: 6; opacity: 0; transition: opacity .2s }
+.dcu-help.dcu-show { opacity: 1 }
+.dcu-help-card { width: min(860px, calc(100% - 32px)); max-height: calc(100% - 48px); overflow: auto; box-sizing: border-box; padding: 24px 30px 22px; border-radius: 18px;
+  background: var(--dcu-paper); color: var(--dcu-ink); box-shadow: 0 30px 80px rgba(0, 0, 0, .45) }
+.dcu-help-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px }
+.dcu-help h2 { margin: 0; font: 700 26px/1.1 var(--dcu-head) }
+.dcu-help .dcu-x:hover { background: rgba(0, 0, 0, .07) }
+.dcu-keys { display: grid; grid-template-columns: max-content 1fr max-content 1fr; gap: 11px 14px; align-items: baseline; margin: 0 }
+.dcu-keys dt { text-align: right; white-space: nowrap }
+.dcu-keys dd { margin: 0; font: 400 16px/1.3 var(--dcu-body); color: var(--dcu-muted) }
+kbd { display: inline-block; font: 700 13px/1 var(--dcu-body); padding: 5px 8px 4px; border-radius: 6px; background: var(--dcu-surface); color: var(--dcu-ink);
+  border: 1px solid var(--dcu-line); box-shadow: 0 2px 0 var(--dcu-line) }
+.dcu-help-foot { margin: 18px 0 0; font: 400 14px/1.4 var(--dcu-body); color: var(--dcu-muted) }
+@media (max-width: 760px) { .dcu-keys { grid-template-columns: max-content 1fr } .dcu-hud .dcu-hide-s { display: none } .dcu-hud { right: 50%; transform: translateX(50%); left: auto }
+  .dcu-idle .dcu-hud:not(:hover):not(:focus-within) { transform: translate(50%, 12px) } }
+@media (max-width: 420px) { .dcu-hud .dcu-b { padding: 0 8px } .dcu-hud .dcu-q { display: none } }
+
+/* ---------- окно докладчика ---------- */
+body.dcu-presenter { background: #0e0f12 }
+body.dcu-presenter #dc-stage { left: var(--dcu-px, 16px); top: var(--dcu-py, 72px); transform: scale(var(--dcu-ps, .5)); transform-origin: 0 0; z-index: 2; box-shadow: 0 16px 50px rgba(0, 0, 0, .5) }
+#dcu-pv { position: fixed; inset: 0; z-index: 1; box-sizing: border-box; display: grid; gap: 16px; padding: 14px 18px 18px; color: #f4f2ee; font-family: var(--dcu-body);
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-areas: "top top" "cur side" "notes ctrl" }
+.dcu-pv-top { grid-area: top; display: flex; align-items: center; gap: 22px; padding: 4px 4px 10px; border-bottom: 1px solid rgba(255, 255, 255, .1) }
+.dcu-pv-deck { font: 700 15px/1.2 var(--dcu-body); letter-spacing: .08em; text-transform: uppercase; opacity: .6 }
+.dcu-pv-where { flex: 1; min-width: 0; font: 400 17px/1.2 var(--dcu-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.dcu-pv-where span { opacity: .6 }
+.dcu-pv-count { font: 400 18px/1 var(--dcu-body); font-variant-numeric: tabular-nums }
+.dcu-pv-count b { font-size: 26px; font-weight: 800 }
+.dcu-pv-timer { display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 14px; border-radius: 999px; background: rgba(255, 255, 255, .07) }
+.dcu-pv-time { font: 800 26px/1 var(--dcu-body); font-variant-numeric: tabular-nums; min-width: 70px; margin-right: 4px }
+.dcu-pv-time.dcu-paused { color: #ffd23f }
+.dcu-pv-clock { font: 600 18px/1 var(--dcu-body); font-variant-numeric: tabular-nums; opacity: .7 }
+.dcu-pv-cur { grid-area: cur; min-height: 0 }
+.dcu-pv-side { grid-area: side; display: flex; flex-direction: column; gap: 10px; min-height: 0 }
+.dcu-pv-next { position: relative; aspect-ratio: 16 / 9; max-height: calc(100% - 70px); border-radius: 8px; overflow: hidden; background: #24252b; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); opacity: .96 }
+.dcu-pv-next svg { display: block; width: 100%; height: 100% }
+.dcu-pv-end { position: absolute; inset: 0; display: grid; place-items: center; font: 700 28px/1 var(--dcu-body); opacity: .5 }
+.dcu-pv-cap { font: 400 17px/1.3 var(--dcu-body); opacity: .8 }
+.dcu-pv-lbl { display: flex; align-items: center; justify-content: space-between; font: 700 12px/1 var(--dcu-body); letter-spacing: .16em; text-transform: uppercase; color: var(--dcu-accent-hi) }
+.dcu-pv-fs { display: inline-flex; gap: 4px; color: #f4f2ee }
+.dcu-pv-fs .dcu-b { height: 28px; min-width: 38px; background: rgba(255, 255, 255, .08) }
+.dcu-pv-notes { grid-area: notes; display: flex; flex-direction: column; gap: 10px; min-height: 0; padding: 14px 18px; border-radius: 14px; background: rgba(255, 255, 255, .05) }
+.dcu-pv-notes-t { flex: 1; overflow: auto; font: 400 30px/1.42 var(--dcu-body); white-space: pre-wrap }
+.dcu-pv-ctrl { grid-area: ctrl; display: flex; flex-wrap: wrap; align-content: flex-start; align-items: center; gap: 10px }
+.dcu-pv-ctrl .dcu-b { background: rgba(255, 255, 255, .08); height: 40px; font-size: 14px }
+.dcu-pv-ctrl .dcu-big { width: 84px; height: 64px; font-size: 26px; border-radius: 16px; background: rgba(255, 255, 255, .12) }
+.dcu-pv-step { flex-basis: 100%; font: 600 15px/1 var(--dcu-body); opacity: .7; min-height: 15px }
+body.dcu-presenter .dcu-ov, body.dcu-presenter .dcu-help { z-index: 30 }
+body.dcu-presenter #dcu { z-index: 25 }
+
+/* ---------- печать / PDF: страница на слайд ---------- */
+@page { size: 1600px 900px; margin: 0 }
+#dcu-print { display: none }
+@media print {
+  html, body { width: 1600px; height: auto !important; overflow: visible !important; background: #fff !important }
+  #dcu, #dcu-pv, #dc-stage { display: none !important }
+  #dcu-print { display: block }
+  .dcu-page { position: relative; width: 1600px; height: 900px; overflow: hidden; margin: 0; break-after: page; page-break-after: always; break-inside: avoid;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact }
+  .dcu-page:last-child { break-after: auto; page-break-after: auto }
+  .dcu-page > svg, .dcu-page > img { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; display: block }
+  .dcu-npage { box-sizing: border-box; padding: 90px 120px; background: #fff; color: #16171b; font: 400 30px/1.5 var(--dcu-body) }
+  .dcu-np-n { margin-bottom: 28px; font: 700 22px/1 var(--dcu-body); letter-spacing: .06em; color: var(--dcu-accent) }
+  .dcu-np-t { white-space: pre-wrap }
+}
+
+/* ---------- без анимаций интерфейса ---------- */
+html.dcu-reduced .dcu-v *, html.dcu-reduced .dcu-layer *, html.dcu-reduced #dcu-pv * { transition: none !important; animation: none !important }
+@media (prefers-reduced-motion: reduce) {
+  .dcu-v *, .dcu-layer *, #dcu-pv * { transition: none !important; animation: none !important }
+  .dcu-ov { transform: none }
+}

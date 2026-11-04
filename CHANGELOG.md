@@ -1,3 +1,13 @@
+# 0.3.3 — Codex / ChatGPT Work portable package
+
+- Add the separate OpenAI package and `.agents/plugins/marketplace.json` for installation from GitHub.
+- Keep the original Claude package and its lifecycle/update behavior unchanged.
+- Replace host-specific artifact storage with local JSON exchange for visual briefs and comparisons.
+- Add toolbar selection for HTML presentations; preserve notes, overview, annotations, pointer, PDF and navigation.
+- Add explicit optional OOXML/LibreOffice paths, UTF-8 page IO and a native PowerPoint static renderer.
+- Add portable runtime diagnostics and Linux package/browser checks. Support hosted or local Python execution;
+  document separate ChatGPT account installation/review and unverified web/mobile availability.
+
 # Changelog
 
 ## 0.3.0 — 2026-10-27
