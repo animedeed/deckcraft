@@ -28,8 +28,11 @@ codex plugin add deckcraft@deckcraft
 После установки начните новый чат. Движок использует Python 3.10+ в локальном или облачном окружении —
 [настройка и облачный запуск](plugins/deckcraft-openai/RUNTIME.md). Локальные MCP, автоматические hooks и обязательный
 PowerPoint не нужны. Веб-ChatGPT и телефон используют ChatGPT Work с доступным выполнением кода.
-Установка GitHub-marketplace в Codex не устанавливает плагин в аккаунт ChatGPT: для каталога ChatGPT нужен ZIP,
-верификация разработчика и проверка OpenAI ([официальная публикация](https://developers.openai.com/plugins/deploy/submission)).
+Установка GitHub-marketplace в Codex не устанавливает плагин в аккаунт ChatGPT. Администратор рабочего пространства
+может импортировать репозиторий через **Admin → Plugins → Add → Import marketplace**: Source `https://github.com/animedeed/deckcraft`,
+Path оставить пустым, Branch `main` ([импорт из GitHub](https://learn.chatgpt.com/docs/enterprise/plugin-management)).
+Для этого не нужна публичная публикация. Верификация разработчика и проверка OpenAI относятся к отдельной
+[публикации в общем каталоге](https://developers.openai.com/plugins/deploy/submission). Доступность импорта в личном аккаунте не подтверждена.
 Обычный Chat без выполнения кода сборку не запускает. Запуск на реальном телефоне и в веб-аккаунте пока не проверен.
 
 Проверки пакета: структура PPTX, редактируемый текст, RU/EN-сборки, HTML-панель, выбор брифа и PDF в браузере.
@@ -157,8 +160,11 @@ codex plugin add deckcraft@deckcraft
 Start a new chat after installing. Python 3.10+ may run in a hosted or local code environment; see
 [runtime and cloud setup](plugins/deckcraft-openai/RUNTIME.md). No local MCP, automatic hooks or PowerPoint build dependency.
 Web and mobile use ChatGPT Work with code execution. Installing this GitHub marketplace in Codex does not install it
-into your ChatGPT account. ChatGPT Directory distribution requires a ZIP, verified identity and OpenAI review
-([submission guide](https://developers.openai.com/plugins/deploy/submission)). Ordinary Chat without code execution cannot build decks.
+into your ChatGPT account. Workspace admins can import it via **Admin → Plugins → Add → Import marketplace**,
+Source `https://github.com/animedeed/deckcraft`, empty Path, Branch `main`
+([GitHub import guide](https://learn.chatgpt.com/docs/enterprise/plugin-management)). This is separate from public distribution,
+which requires a ZIP, verified identity and review ([submission guide](https://developers.openai.com/plugins/deploy/submission)).
+Personal-account import availability has not been verified. Ordinary Chat without code execution cannot build decks.
 Actual web-account and phone execution has not yet been verified. Linux CI checks the portable engine and browser outputs.
 
 ### Install in Claude Code

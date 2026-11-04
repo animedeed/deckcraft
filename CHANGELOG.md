@@ -1,3 +1,8 @@
+# 0.3.6 — ChatGPT GitHub import and motion review
+
+- Document workspace GitHub import separately from verified public-directory publication.
+- Require semantic object pairing and intermediate-frame checks for combined animated decks.
+
 # 0.3.5 — Keep readable demo navigation
 
 - Widen the demo menu for Linux font metrics while keeping its 12 pt minimum.
