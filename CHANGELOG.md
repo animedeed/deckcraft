@@ -1,3 +1,7 @@
+# 0.3.5 — Keep readable demo navigation
+
+- Widen the demo menu for Linux font metrics while keeping its 12 pt minimum.
+
 # 0.3.4 — Portable demo navigation
 
 - Fit the longest Russian demo menu label with Linux font metrics, preserving layout checks.

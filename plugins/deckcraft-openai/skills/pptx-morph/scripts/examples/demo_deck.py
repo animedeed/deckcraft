@@ -67,7 +67,7 @@ DEFAULT_VARIANT = {"label": "A", "palette": "neuro", "motif": "neural", "navigat
 def _nav(nav: str, blk: int, page: int, total: int) -> list:
     """Навигация варианта на слайде раздела blk. Одна система на презентацию (structure.md)."""
     if nav == "menu":
-        return menu_bar("nav", BLOCKS, blk, y=0.16, sz=11.5)
+        return menu_bar("nav", BLOCKS, blk, y=0.16, sz=12, char_w=0.11)
     if nav == "agenda":
         return agenda("ag", BLOCKS, state="bar", k=blk)
     return block_counter("nav", f"{tr('Блок')} {blk + 1} — {tr(BLOCKS[blk])}", page, total, y=0.18)
