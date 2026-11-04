@@ -1,6 +1,6 @@
 {
   "name": "deckcraft",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Deckcraft for ChatGPT Work and Codex: PowerPoint Morph and interactive HTML, portable Python engine, visual briefs, configurable tools, remix and review.",
   "skills": "./skills/",
   "requires_local_executor": false,

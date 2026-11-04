@@ -1,3 +1,7 @@
+# 0.3.4 — Portable demo navigation
+
+- Fit the longest Russian demo menu label with Linux font metrics, preserving layout checks.
+
 # 0.3.3 — Codex / ChatGPT Work portable package
 
 - Add the separate OpenAI package and `.agents/plugins/marketplace.json` for installation from GitHub.

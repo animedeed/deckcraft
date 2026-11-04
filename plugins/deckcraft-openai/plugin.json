@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "deckcraft",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Deckcraft for ChatGPT Work and Codex: PowerPoint Morph and interactive HTML, portable Python engine, visual briefs, configurable tools, remix and review.",
   "extensions": {
     "com.openai": {
